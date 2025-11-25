@@ -1,0 +1,26 @@
+# GitHub'a Yükleme Komutları
+# Bu komutları PowerShell'de sırayla çalıştırın
+
+# 1. Git'i başlat
+git init
+
+# 2. Tüm dosyaları ekle
+git add .
+
+# 3. İlk commit
+git commit -m "Initial commit: Ticket Support System with Admin Panel"
+
+# 4. GitHub repo'yu ekle
+git remote add origin https://github.com/12worlds24/Case_yonetimi.git
+
+# 5. Ana branch'i main olarak ayarla
+git branch -M main
+
+# 6. GitHub'a yükle
+git push -u origin main
+
+# NOT: Eğer GitHub kullanıcı adı/şifre sorarsa:
+# - Kullanıcı adı: GitHub kullanıcı adınız
+# - Şifre: Personal Access Token (şifre değil!)
+#   Token oluşturma: GitHub → Settings → Developer settings → Personal access tokens
+
