@@ -27,3 +27,6 @@ class Customer(BaseModel):
     def __repr__(self):
         return f"<Customer(id={self.id}, name='{self.name}')>"
 
+
+
+

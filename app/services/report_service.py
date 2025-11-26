@@ -72,3 +72,6 @@ class ReportService:
         """Get list of report templates"""
         return self.db.query(ReportTemplate).offset(skip).limit(limit).all()
 
+
+
+

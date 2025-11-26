@@ -107,3 +107,6 @@ class CaseAssignmentResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+
+

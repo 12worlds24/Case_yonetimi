@@ -11,3 +11,6 @@ SET timezone = 'UTC';
 -- Note: Tables will be created by SQLAlchemy migrations
 -- This script is for initial setup only
 
+
+
+

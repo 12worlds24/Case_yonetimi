@@ -8,6 +8,8 @@ from app.models.case import (
     PriorityType, SupportType, CaseStatus
 )
 from app.models.report import CustomField, ReportTemplate, ReportDefinition
+from app.models.support_status import SupportStatus
+from app.models.support_type import SupportType
 
 __all__ = [
     "BaseModel",
@@ -28,4 +30,6 @@ __all__ = [
     "CustomField",
     "ReportTemplate",
     "ReportDefinition",
+    "SupportStatus",
+    "SupportType",
 ]

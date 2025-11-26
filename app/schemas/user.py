@@ -29,19 +29,6 @@ class UserUpdate(BaseModel):
     role_ids: Optional[List[int]] = None
 
 
-class UserResponse(UserBase):
-    """User response schema"""
-    id: int
-    is_active: int
-    created_at: datetime
-    updated_at: datetime
-    department: Optional[dict] = None
-    roles: Optional[List[dict]] = None
-    
-    class Config:
-        from_attributes = True
-
-
 class DepartmentBase(BaseModel):
     """Base department schema"""
     name: str
@@ -82,4 +69,20 @@ class RoleResponse(RoleBase):
     
     class Config:
         from_attributes = True
+
+
+class UserResponse(UserBase):
+    """User response schema"""
+    id: int
+    is_active: int
+    created_at: datetime
+    updated_at: datetime
+    department: Optional[DepartmentResponse] = None
+    roles: Optional[List[RoleResponse]] = None
+    
+    class Config:
+        from_attributes = True
+
+
+
 

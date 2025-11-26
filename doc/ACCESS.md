@@ -182,3 +182,6 @@ Tarayıcıda şu adresleri deneyin:
 
 Hepsi çalışıyorsa, sistem hazır demektir!
 
+
+
+

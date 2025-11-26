@@ -55,3 +55,6 @@ class ReportDefinition(BaseModel):
     def __repr__(self):
         return f"<ReportDefinition(id={self.id}, name='{self.name}')>"
 
+
+
+

@@ -5,63 +5,151 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Ticket Support System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">Ticket Support System - Admin Panel</span>
-            <div class="d-flex">
-                <span class="text-light me-3" id="userInfo"></span>
-                <button class="btn btn-outline-light btn-sm" onclick="logout()">Çıkış</button>
-            </div>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-ticket-alt"></i> Admin Panel</h2>
         </div>
-    </nav>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <!-- Finansal İşlemler -->
+                <li class="nav-menu-item">
+                    <a href="#" class="nav-menu-link" onclick="toggleSubmenu(event, 'financial'); return false;">
+                        <i class="fas fa-dollar-sign"></i> Finansal İşlemler
+                        <i class="fas fa-chevron-up nav-arrow" id="financial-arrow"></i>
+                    </a>
+                    <ul class="nav-submenu" id="financial-submenu" style="display: none;">
+                        <li><a href="#" class="nav-submenu-link" onclick="switchTab('financial'); return false;">
+                            Finansal Raporlar
+                        </a></li>
+                    </ul>
+                </li>
 
-    <div class="container-fluid mt-4">
-        <ul class="nav nav-tabs" id="adminTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
-                    Kullanıcılar
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="customers-tab" data-bs-toggle="tab" data-bs-target="#customers" type="button" role="tab">
-                    Müşteriler
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">
-                    Ürünler
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="departments-tab" data-bs-toggle="tab" data-bs-target="#departments" type="button" role="tab">
-                    Departmanlar
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="roles-tab" data-bs-toggle="tab" data-bs-target="#roles" type="button" role="tab">
-                    Roller
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="cases-tab" data-bs-toggle="tab" data-bs-target="#cases" type="button" role="tab">
-                    Caseler
-                </button>
-            </li>
-        </ul>
+                <!-- Destek Yönetimi -->
+                <li class="nav-menu-item">
+                    <a href="#" class="nav-menu-link active" onclick="toggleSubmenu(event, 'support'); return false;">
+                        <i class="fas fa-headset"></i> Destek Yönetimi
+                        <i class="fas fa-chevron-up nav-arrow" id="support-arrow"></i>
+                    </a>
+                    <ul class="nav-submenu" id="support-submenu">
+                        <li><a href="#" class="nav-submenu-link" data-tab="all-cases" onclick="switchTab('all-cases'); return false;">
+                            Tüm Destek Talepleri
+                        </a></li>
+                        <li><a href="#" class="nav-submenu-link" data-tab="assigned-cases" onclick="switchTab('assigned-cases'); return false;">
+                            Atanan Destek Talepleri
+                        </a></li>
+                        <li><a href="#" class="nav-submenu-link" data-tab="resolved-cases" onclick="switchTab('resolved-cases'); return false;">
+                            Çözülen Destek Talepleri
+                        </a></li>
+                    </ul>
+                </li>
 
-        <div class="tab-content mt-4" id="adminTabContent">
-            <!-- Kullanıcılar Tab -->
-            <div class="tab-pane fade show active" id="users" role="tabpanel">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Kullanıcı Yönetimi</h5>
-                        <button class="btn btn-primary btn-sm" onclick="showAddUserModal()">Yeni Kullanıcı Ekle</button>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped">
+                <!-- Kullanıcı Yönetimi -->
+                <li class="nav-menu-item">
+                    <a href="#" class="nav-menu-link" onclick="toggleSubmenu(event, 'users'); return false;">
+                        <i class="fas fa-users"></i> Kullanıcı Yönetimi
+                        <i class="fas fa-chevron-down nav-arrow" id="users-arrow"></i>
+                    </a>
+                    <ul class="nav-submenu" id="users-submenu" style="display: none;">
+                        <li><a href="#" class="nav-submenu-link" data-tab="users" onclick="switchTab('users'); return false;">
+                            Kullanıcılar
+                        </a></li>
+                        <li><a href="#" class="nav-submenu-link" data-tab="departments" onclick="switchTab('departments'); return false;">
+                            Departmanlar
+                        </a></li>
+                        <li><a href="#" class="nav-submenu-link" data-tab="roles" onclick="switchTab('roles'); return false;">
+                            Roller
+                        </a></li>
+                    </ul>
+                </li>
+
+                <!-- Müşteri Yönetimi -->
+                <li class="nav-menu-item">
+                    <a href="#" class="nav-menu-link" onclick="toggleSubmenu(event, 'customers'); return false;">
+                        <i class="fas fa-building"></i> Müşteri Yönetimi
+                        <i class="fas fa-chevron-down nav-arrow" id="customers-arrow"></i>
+                    </a>
+                    <ul class="nav-submenu" id="customers-submenu" style="display: none;">
+                        <li><a href="#" class="nav-submenu-link" data-tab="customers" onclick="switchTab('customers'); return false;">
+                            Müşteriler
+                        </a></li>
+                        <li><a href="#" class="nav-submenu-link" data-tab="products" onclick="switchTab('products'); return false;">
+                            Ürünler
+                        </a></li>
+                    </ul>
+                </li>
+
+                <!-- Genel Ayarlar -->
+                <li class="nav-menu-item">
+                    <a href="#" class="nav-menu-link" onclick="toggleSubmenu(event, 'settings'); return false;">
+                        <i class="fas fa-cog"></i> Genel Ayarlar
+                        <i class="fas fa-chevron-down nav-arrow" id="settings-arrow"></i>
+                    </a>
+                    <ul class="nav-submenu" id="settings-submenu" style="display: none;">
+                        <li class="nav-submenu-item">
+                            <a href="#" class="nav-submenu-link" onclick="toggleSubSubmenu(event, 'support-settings'); return false;">
+                                Destek Ayarları
+                                <i class="fas fa-chevron-up nav-arrow" id="support-settings-arrow"></i>
+                            </a>
+                            <ul class="nav-sub-submenu" id="support-settings-submenu">
+                                <li><a href="#" class="nav-sub-submenu-link active" data-tab="support-statuses" onclick="switchTab('support-statuses'); return false;">
+                                    Destek Durumları
+                                </a></li>
+                                <li><a href="#" class="nav-sub-submenu-link" data-tab="support-types" onclick="switchTab('support-types'); return false;">
+                                    Destek Tipleri
+                                </a></li>
+                                <li><a href="#" class="nav-sub-submenu-link" data-tab="priority-types" onclick="switchTab('priority-types'); return false;">
+                                    Öncelik Tipleri
+                                </a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Ana Sayfa -->
+                <li class="nav-menu-item">
+                    <a href="/" class="nav-menu-link">
+                        <i class="fas fa-home"></i> Ana Sayfa
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <h3 style="margin: 0; font-size: 18px;" id="pageTitle">Kullanıcı Yönetimi</h3>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <span id="userInfo">Admin</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Çıkış
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Users Tab -->
+        <div class="tab-content" id="users" style="display: block;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Kullanıcı Yönetimi</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showAddUserModal()">
+                        <i class="fas fa-plus"></i> Yeni Kullanıcı Ekle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -80,16 +168,20 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Müşteriler Tab -->
-            <div class="tab-pane fade" id="customers" role="tabpanel">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Müşteri Yönetimi</h5>
-                        <button class="btn btn-primary btn-sm" onclick="showAddCustomerModal()">Yeni Müşteri Ekle</button>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped">
+        <!-- Customers Tab -->
+        <div class="tab-content" id="customers" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Müşteri Yönetimi</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showAddCustomerModal()">
+                        <i class="fas fa-plus"></i> Yeni Müşteri Ekle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -107,16 +199,20 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Ürünler Tab -->
-            <div class="tab-pane fade" id="products" role="tabpanel">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Ürün Yönetimi</h5>
-                        <button class="btn btn-primary btn-sm" onclick="showAddProductModal()">Yeni Ürün Ekle</button>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped">
+        <!-- Products Tab -->
+        <div class="tab-content" id="products" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Ürün Yönetimi</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showAddProductModal()">
+                        <i class="fas fa-plus"></i> Yeni Ürün Ekle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -133,16 +229,20 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Departmanlar Tab -->
-            <div class="tab-pane fade" id="departments" role="tabpanel">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Departman Yönetimi</h5>
-                        <button class="btn btn-primary btn-sm" onclick="showAddDepartmentModal()">Yeni Departman Ekle</button>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped">
+        <!-- Departments Tab -->
+        <div class="tab-content" id="departments" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Departman Yönetimi</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showAddDepartmentModal()">
+                        <i class="fas fa-plus"></i> Yeni Departman Ekle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -158,16 +258,20 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Roller Tab -->
-            <div class="tab-pane fade" id="roles" role="tabpanel">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Rol Yönetimi</h5>
-                        <button class="btn btn-primary btn-sm" onclick="showAddRoleModal()">Yeni Rol Ekle</button>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped">
+        <!-- Roles Tab -->
+        <div class="tab-content" id="roles" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Rol Yönetimi</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showAddRoleModal()">
+                        <i class="fas fa-plus"></i> Yeni Rol Ekle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -183,15 +287,17 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Caseler Tab -->
-            <div class="tab-pane fade" id="cases" role="tabpanel">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Case Yönetimi</h5>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped">
+        <!-- Cases Tab -->
+        <div class="tab-content" id="cases" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Case Yönetimi</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -210,13 +316,1406 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Modals will be added by JavaScript -->
+        <!-- All Cases Tab -->
+        <div class="tab-content" id="all-cases" style="display: none;">
+            <!-- Header -->
+            <div class="page-header">
+                <h2>Tüm Destek Talepleri</h2>
+                <button class="btn btn-primary" onclick="showAddCaseModal()">
+                    <i class="fas fa-plus"></i> Destek Talebi Ekle
+                </button>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid-cases">
+                <div class="stat-card stat-card-purple">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <p class="stat-label">TOPLAM TALEP</p>
+                            <h3 class="stat-value" id="totalCasesCount">0</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-orange">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <p class="stat-label">BEKLEMEDE</p>
+                            <h3 class="stat-value" id="pendingCasesCount">0</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <p class="stat-label">ATANDI</p>
+                            <h3 class="stat-value" id="assignedCasesCount">0</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-green">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <p class="stat-label">ÇÖZÜLDÜ</p>
+                            <h3 class="stat-value" id="resolvedCasesCount">0</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="card filter-card">
+                <div class="card-header filter-header" onclick="toggleFilterPanel()">
+                    <h3><i class="fas fa-filter"></i> Gelişmiş Filtreler</h3>
+                    <i class="fas fa-chevron-down filter-arrow" id="filterArrow"></i>
+                </div>
+                <div class="card-body filter-body" id="filterBody">
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label>Başlangıç Tarihi</label>
+                            <input type="date" class="form-control" id="filterStartDate">
+                        </div>
+                        <div class="filter-group">
+                            <label>Bitiş Tarihi</label>
+                            <input type="date" class="form-control" id="filterEndDate">
+                        </div>
+                        <div class="filter-group">
+                            <label>Müşteri</label>
+                            <select class="form-select" id="filterCustomer">
+                                <option value="">Tümü</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Ticket Türü</label>
+                            <select class="form-select" id="filterTicketType">
+                                <option value="">Tümü</option>
+                                <option value="email">Email</option>
+                                <option value="remote">Uzaktan</option>
+                                <option value="onsite">Yerinde</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Durum</label>
+                            <select class="form-select" id="filterStatus">
+                                <option value="">Tümü</option>
+                                <option value="pending">Bekleyen</option>
+                                <option value="assigned">Atandı</option>
+                                <option value="in_progress">Devam Ediyor</option>
+                                <option value="resolved">Çözüldü</option>
+                                <option value="closed">Kapatıldı</option>
+                                <option value="cancelled">İptal</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Öncelik</label>
+                            <select class="form-select" id="filterPriority">
+                                <option value="">Tümü</option>
+                                <option value="low">Düşük</option>
+                                <option value="medium">Orta</option>
+                                <option value="high">Yüksek</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Atanan</label>
+                            <select class="form-select" id="filterAssigned">
+                                <option value="">Tümü</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-filter"></i> Filtrele
+                        </button>
+                        <button class="btn btn-outline" onclick="clearFilters()">
+                            <i class="fas fa-times"></i> Temizle
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="card">
+                <div class="card-header table-header">
+                    <div class="table-actions">
+                        <button class="btn btn-sm btn-success" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                    <div class="table-search">
+                        <input type="text" class="form-control form-control-sm" id="tableSearch" placeholder="Ara..." onkeyup="filterTable()">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table table-hover" id="allCasesTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable('title')">
+                                        BAŞLIK <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th onclick="sortTable('customer')">
+                                        MÜŞTERİ <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th onclick="sortTable('date')">
+                                        TARİH <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th onclick="sortTable('type')">
+                                        TÜR <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th onclick="sortTable('status')">
+                                        DURUM <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th onclick="sortTable('priority')">
+                                        ÖNCELİK <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th onclick="sortTable('channel')">
+                                        KANAL <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th onclick="sortTable('assigned')">
+                                        ATANAN <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th>İŞLEM</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allCasesTableBody">
+                                <tr><td colspan="9" class="text-center">Tabloda veri bulunmuyor</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <span id="paginationInfo">Kayıt yok</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="btn btn-sm btn-outline" onclick="goToFirstPage()" id="firstBtn" disabled>
+                                İlk
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="goToPreviousPage()" id="prevBtn" disabled>
+                                Önceki
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="goToNextPage()" id="nextBtn" disabled>
+                                Sonraki
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="goToLastPage()" id="lastBtn" disabled>
+                                Son
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Cases Tab -->
+        <div class="tab-content" id="assigned-cases" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Atanan Destek Talepleri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Başlık</th>
+                                    <th>Müşteri</th>
+                                    <th>Öncelik</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assignedCasesTable">
+                                <tr><td colspan="6" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resolved Cases Tab -->
+        <div class="tab-content" id="resolved-cases" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Çözülen Destek Talepleri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Başlık</th>
+                                    <th>Müşteri</th>
+                                    <th>Öncelik</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resolvedCasesTable">
+                                <tr><td colspan="6" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Tab -->
+        <div class="tab-content" id="financial" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Finansal İşlemler</h3>
+                </div>
+                <div class="card-body">
+                    <p>Finansal işlemler modülü yakında eklenecek.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Statuses Tab -->
+        <div class="tab-content" id="support-statuses" style="display: none;">
+            <div class="page-header">
+                <h2>Destek Durumları</h2>
+                <button class="btn btn-primary" onclick="showAddStatusModal()">
+                    <i class="fas fa-plus"></i> Yeni Durum Ekle
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3>Destek Durumları</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Durum Adı</th>
+                                    <th>Açıklama</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="statusesTable">
+                                <tr><td colspan="5" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Types Tab -->
+        <div class="tab-content" id="support-types" style="display: none;">
+            <div class="page-header">
+                <h2>Destek Tipleri</h2>
+                <button class="btn btn-primary" onclick="showAddSupportTypeModal()">
+                    <i class="fas fa-plus"></i> Yeni Tip Ekle
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tip Adı</th>
+                                    <th>Açıklama</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supportTypesTable">
+                                <tr><td colspan="5" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Priority Types Tab -->
+        <div class="tab-content" id="priority-types" style="display: none;">
+            <div class="page-header">
+                <h2>Öncelik Tipleri</h2>
+                <button class="btn btn-primary" onclick="showAddPriorityTypeModal()">
+                    <i class="fas fa-plus"></i> Yeni Öncelik Ekle
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Öncelik Adı</th>
+                                        <th>Açıklama</th>
+                                        <th>Renk</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="priorityTypesTable">
+                                    <tr><td colspan="5" class="text-center">Yükleniyor...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals Container -->
     <div id="modalsContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/admin.js"></script>
+    <script>
+        // Toggle submenu
+        function toggleSubmenu(event, menuId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const submenu = document.getElementById(menuId + '-submenu');
+            const arrow = document.getElementById(menuId + '-arrow');
+            const menuItem = event.currentTarget.closest('.nav-menu-item');
+            
+            // Close all other submenus
+            document.querySelectorAll('.nav-submenu').forEach(sub => {
+                if (sub !== submenu) {
+                    sub.style.display = 'none';
+                }
+            });
+            
+            // Remove active class from all menu items
+            document.querySelectorAll('.nav-menu-item').forEach(item => {
+                if (item !== menuItem) {
+                    item.classList.remove('active');
+                    const otherArrow = item.querySelector('.nav-arrow');
+                    if (otherArrow) {
+                        otherArrow.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
+            
+            // Toggle current submenu
+            if (submenu.style.display === 'none' || !submenu.style.display) {
+                submenu.style.display = 'block';
+                menuItem.classList.add('active');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(180deg)';
+                }
+            } else {
+                submenu.style.display = 'none';
+                menuItem.classList.remove('active');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-menu-link, .nav-submenu-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const tabElement = document.getElementById(tabName);
+            if (tabElement) {
+                tabElement.style.display = 'block';
+            }
+            
+            // Add active class to selected nav link
+            const activeLink = document.querySelector(`[data-tab="${tabName}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+                // Also activate parent menu if it's a submenu
+                const parentMenu = activeLink.closest('.nav-menu-item');
+                if (parentMenu) {
+                    const menuLink = parentMenu.querySelector('.nav-menu-link');
+                    if (menuLink) {
+                        menuLink.classList.add('active');
+                    }
+                    // Expand parent menu
+                    const submenu = parentMenu.querySelector('.nav-submenu');
+                    if (submenu) {
+                        submenu.style.display = 'block';
+                        parentMenu.classList.add('active');
+                        const arrow = parentMenu.querySelector('.nav-arrow');
+                        if (arrow) {
+                            arrow.style.transform = 'rotate(180deg)';
+                        }
+                    }
+                }
+            }
+            
+            // Update page title
+            const titles = {
+                'users': 'Kullanıcı Yönetimi',
+                'customers': 'Müşteri Yönetimi',
+                'products': 'Ürün Yönetimi',
+                'departments': 'Departman Yönetimi',
+                'roles': 'Rol Yönetimi',
+                'cases': 'Case Yönetimi',
+                'all-cases': 'Tüm Destek Talepleri',
+                'assigned-cases': 'Atanan Destek Talepleri',
+                'resolved-cases': 'Çözülen Destek Talepleri',
+                'financial': 'Finansal İşlemler',
+                'support-settings': 'Destek Ayarları'
+            };
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle) {
+                pageTitle.textContent = titles[tabName] || 'Admin Panel';
+            }
+            
+            // Load data based on tab
+            if (tabName === 'support-statuses') {
+                loadSupportStatuses();
+            } else if (tabName === 'support-types') {
+                loadSupportTypes();
+            } else if (tabName === 'priority-types') {
+                loadPriorityTypes();
+            }
+            
+            // Update sidebar active states
+            updateSidebarActiveState(tabName);
+        }
+
+        // Toggle Sub-Submenu
+        function toggleSubSubmenu(event, menuId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const submenu = document.getElementById(menuId + '-submenu');
+            const arrow = document.getElementById(menuId + '-arrow');
+            const menuItem = event.currentTarget.closest('.nav-submenu-item');
+            
+            // Close all other sub-submenus
+            document.querySelectorAll('.nav-sub-submenu').forEach(sub => {
+                if (sub !== submenu) {
+                    sub.style.display = 'none';
+                }
+            });
+            
+            // Toggle current sub-submenu
+            if (submenu.style.display === 'none' || !submenu.style.display) {
+                submenu.style.display = 'block';
+                if (arrow) {
+                    arrow.style.transform = 'rotate(180deg)';
+                }
+            } else {
+                submenu.style.display = 'none';
+                if (arrow) {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+
+        // Update Sidebar Active State
+        function updateSidebarActiveState(tabName) {
+            // Remove active from all sub-submenu links
+            document.querySelectorAll('.nav-sub-submenu-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Add active to current tab
+            const activeLink = document.querySelector(`[data-tab="${tabName}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+                // Expand parent menus
+                const subSubmenu = activeLink.closest('.nav-sub-submenu');
+                if (subSubmenu) {
+                    subSubmenu.style.display = 'block';
+                    const parentLink = subSubmenu.previousElementSibling;
+                    if (parentLink) {
+                        const arrow = parentLink.querySelector('.nav-arrow');
+                        if (arrow) {
+                            arrow.style.transform = 'rotate(180deg)';
+                        }
+                    }
+                }
+                // Expand settings menu
+                const settingsSubmenu = document.getElementById('settings-submenu');
+                if (settingsSubmenu) {
+                    settingsSubmenu.style.display = 'block';
+                    const settingsArrow = document.getElementById('settings-arrow');
+                    if (settingsArrow) {
+                        settingsArrow.style.transform = 'rotate(180deg)';
+                    }
+                    const settingsMenuItem = document.querySelector('.nav-menu-item:has(#settings-submenu)');
+                    if (settingsMenuItem) {
+                        settingsMenuItem.classList.add('active');
+                    }
+                }
+            }
+        }
+
+        // Load Support Statuses
+        async function loadSupportStatuses() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/support-statuses', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('authToken');
+                    alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+                    window.location.replace('/');
+                    return;
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const statuses = await response.json();
+                
+                const tbody = document.getElementById('statusesTable');
+                if (!tbody) return;
+                
+                if (!statuses || !Array.isArray(statuses)) {
+                    throw new Error('Geçersiz veri formatı');
+                }
+                
+                if (statuses.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">Kayıt bulunamadı</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = statuses.map(status => `
+                    <tr>
+                        <td>${status.id}</td>
+                        <td><strong>${status.name}</strong></td>
+                        <td>${status.description || '-'}</td>
+                        <td>
+                            ${status.color ? `<span class="badge" style="background-color: ${status.color}; color: white; padding: 4px 12px; border-radius: 4px;">${status.color}</span>` : '-'}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editStatus(${status.id})">
+                                <i class="fas fa-edit"></i> Düzenle
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteStatus(${status.id})">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading support statuses:', error);
+                const tbody = document.getElementById('statusesTable');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Hata: ' + (error.message || 'Bilinmeyen hata') + '</td></tr>';
+                }
+            }
+        }
+        
+        // Show Add Status Modal
+        function showAddStatusModal() {
+            const modal = createModal('addStatusModal', 'Yeni Destek Durumu Ekle', `
+                <form id="addStatusForm" class="modal-form">
+                    <div class="form-grid">
+                        <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                            <label class="form-label">Durum Adı *</label>
+                            <div class="input-icon">
+                                <i class="fas fa-tag"></i>
+                                <input type="text" class="form-control" id="statusName" placeholder="Örn: Bekleyen" required>
+                            </div>
+                        </div>
+                        <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                            <label class="form-label">Açıklama</label>
+                            <div class="input-icon">
+                                <i class="fas fa-align-left"></i>
+                                <textarea class="form-control" id="statusDescription" placeholder="Durum açıklaması..." rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group with-icon">
+                            <label class="form-label">Durum</label>
+                            <div class="input-icon">
+                                <i class="fas fa-toggle-on"></i>
+                                <select class="form-select" id="statusIsActive">
+                                    <option value="1" selected>Aktif</option>
+                                    <option value="0">Pasif</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group with-icon">
+                            <label class="form-label">Sıralama</label>
+                            <div class="input-icon">
+                                <i class="fas fa-sort-numeric-down"></i>
+                                <input type="number" class="form-control" id="statusSortOrder" value="0" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            `, async () => {
+                const statusData = {
+                    name: document.getElementById('statusName').value.trim(),
+                    description: document.getElementById('statusDescription').value.trim() || null,
+                    is_active: parseInt(document.getElementById('statusIsActive').value),
+                    sort_order: parseInt(document.getElementById('statusSortOrder').value) || 0
+                };
+                
+                if (!statusData.name) {
+                    alert('Lütfen durum adı girin.');
+                    return;
+                }
+                
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch('/api/support-statuses', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(statusData)
+                    });
+                    
+                    if (response.ok) {
+                        alert('Destek durumu başarıyla eklendi!');
+                        bootstrap.Modal.getInstance(document.getElementById('addStatusModal')).hide();
+                        loadSupportStatuses();
+                    } else {
+                        const error = await response.json();
+                        alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    }
+                } catch (error) {
+                    alert('Hata: ' + error.message);
+                }
+            });
+            
+            const modalElement = new bootstrap.Modal(document.getElementById('addStatusModal'));
+            modalElement.show();
+        }
+        
+        async function editStatus(id) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/support-statuses', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Durum verileri yüklenemedi');
+                
+                const statuses = await response.json();
+                const status = statuses.find(s => s.id === id);
+                if (!status) throw new Error('Durum bulunamadı');
+                
+                const modal = createModal('editStatusModal', 'Destek Durumu Düzenle', `
+                    <form id="editStatusForm" class="modal-form">
+                        <div class="form-grid">
+                            <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                                <label class="form-label">Durum Adı *</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-tag"></i>
+                                    <input type="text" class="form-control" id="editStatusName" value="${status.name || ''}" required>
+                                </div>
+                            </div>
+                            <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                                <label class="form-label">Açıklama</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-align-left"></i>
+                                    <textarea class="form-control" id="editStatusDescription" rows="3">${status.description || ''}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-group with-icon">
+                                <label class="form-label">Durum</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-toggle-on"></i>
+                                    <select class="form-select" id="editStatusIsActive">
+                                        <option value="1" ${status.is_active === 1 ? 'selected' : ''}>Aktif</option>
+                                        <option value="0" ${status.is_active === 0 ? 'selected' : ''}>Pasif</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group with-icon">
+                                <label class="form-label">Sıralama</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-sort-numeric-down"></i>
+                                    <input type="number" class="form-control" id="editStatusSortOrder" value="${status.sort_order || 0}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                `, async () => {
+                    const statusData = {
+                        name: document.getElementById('editStatusName').value.trim(),
+                        description: document.getElementById('editStatusDescription').value.trim() || null,
+                        is_active: parseInt(document.getElementById('editStatusIsActive').value),
+                        sort_order: parseInt(document.getElementById('editStatusSortOrder').value) || 0
+                    };
+                    
+                    if (!statusData.name) {
+                        alert('Lütfen durum adı girin.');
+                        return;
+                    }
+                    
+                    try {
+                        const token = localStorage.getItem('authToken');
+                        const response = await fetch(`/api/support-statuses/${id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(statusData)
+                        });
+                        
+                        if (response.ok) {
+                            alert('Destek durumu başarıyla güncellendi!');
+                            bootstrap.Modal.getInstance(document.getElementById('editStatusModal')).hide();
+                            loadSupportStatuses();
+                        } else {
+                            const error = await response.json();
+                            alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                        }
+                    } catch (error) {
+                        alert('Hata: ' + error.message);
+                    }
+                });
+                
+                const modalElement = new bootstrap.Modal(document.getElementById('editStatusModal'));
+                modalElement.show();
+            } catch (error) {
+                alert('Hata: ' + error.message);
+            }
+        }
+        
+        async function deleteStatus(id) {
+            if (confirm('Bu durumu silmek istediğinizden emin misiniz?')) {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch(`/api/support-statuses/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok || response.status === 204) {
+                        alert('Destek durumu başarıyla silindi!');
+                        loadSupportStatuses();
+                    } else {
+                        const error = await response.json();
+                        alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    }
+                } catch (error) {
+                    alert('Hata: ' + error.message);
+                }
+            }
+        }
+
+        // Load Support Types
+        async function loadSupportTypes() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/support-types', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('authToken');
+                    alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+                    window.location.replace('/');
+                    return;
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const types = await response.json();
+                
+                const tbody = document.getElementById('supportTypesTable');
+                if (!tbody) return;
+                
+                if (!types || !Array.isArray(types)) {
+                    throw new Error('Geçersiz veri formatı');
+                }
+                
+                if (types.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">Kayıt bulunamadı</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = types.map(type => `
+                    <tr>
+                        <td>${type.id}</td>
+                        <td><strong>${type.name}</strong></td>
+                        <td>${type.description || '-'}</td>
+                        <td>
+                            <span class="badge badge-${type.is_active === 1 ? 'success' : 'danger'}">
+                                ${type.is_active === 1 ? 'Aktif' : 'Pasif'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editSupportType(${type.id})">
+                                <i class="fas fa-edit"></i> Düzenle
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSupportType(${type.id})">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading support types:', error);
+                const tbody = document.getElementById('supportTypesTable');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Hata: ' + (error.message || 'Bilinmeyen hata') + '</td></tr>';
+                }
+            }
+        }
+        
+        // Show Add Support Type Modal
+        function showAddSupportTypeModal() {
+            const modal = createModal('addSupportTypeModal', 'Yeni Destek Tipi Ekle', `
+                <form id="addSupportTypeForm" class="modal-form">
+                    <div class="form-grid">
+                        <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                            <label class="form-label">Tip Adı *</label>
+                            <div class="input-icon">
+                                <i class="fas fa-tag"></i>
+                                <input type="text" class="form-control" id="supportTypeName" placeholder="Örn: Email, Uzaktan, Yerinde" required>
+                            </div>
+                        </div>
+                        <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                            <label class="form-label">Açıklama</label>
+                            <div class="input-icon">
+                                <i class="fas fa-align-left"></i>
+                                <textarea class="form-control" id="supportTypeDescription" placeholder="Tip açıklaması..." rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group with-icon">
+                            <label class="form-label">Durum</label>
+                            <div class="input-icon">
+                                <i class="fas fa-toggle-on"></i>
+                                <select class="form-select" id="supportTypeIsActive">
+                                    <option value="1" selected>Aktif</option>
+                                    <option value="0">Pasif</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group with-icon">
+                            <label class="form-label">Sıralama</label>
+                            <div class="input-icon">
+                                <i class="fas fa-sort-numeric-down"></i>
+                                <input type="number" class="form-control" id="supportTypeSortOrder" value="0" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            `, async () => {
+                const typeData = {
+                    name: document.getElementById('supportTypeName').value.trim(),
+                    description: document.getElementById('supportTypeDescription').value.trim() || null,
+                    is_active: parseInt(document.getElementById('supportTypeIsActive').value),
+                    sort_order: parseInt(document.getElementById('supportTypeSortOrder').value) || 0
+                };
+                
+                if (!typeData.name) {
+                    alert('Lütfen tip adı girin.');
+                    return;
+                }
+                
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch('/api/support-types', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(typeData)
+                    });
+                    
+                    if (response.ok) {
+                        alert('Destek tipi başarıyla eklendi!');
+                        bootstrap.Modal.getInstance(document.getElementById('addSupportTypeModal')).hide();
+                        loadSupportTypes();
+                    } else {
+                        const error = await response.json();
+                        alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    }
+                } catch (error) {
+                    alert('Hata: ' + error.message);
+                }
+            });
+            
+            const modalElement = new bootstrap.Modal(document.getElementById('addSupportTypeModal'));
+            modalElement.show();
+        }
+        
+        async function editSupportType(id) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/support-types', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Tip verileri yüklenemedi');
+                
+                const types = await response.json();
+                const type = types.find(t => t.id === id);
+                if (!type) throw new Error('Tip bulunamadı');
+                
+                const modal = createModal('editSupportTypeModal', 'Destek Tipi Düzenle', `
+                    <form id="editSupportTypeForm" class="modal-form">
+                        <div class="form-grid">
+                            <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                                <label class="form-label">Tip Adı *</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-tag"></i>
+                                    <input type="text" class="form-control" id="editSupportTypeName" value="${type.name || ''}" required>
+                                </div>
+                            </div>
+                            <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                                <label class="form-label">Açıklama</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-align-left"></i>
+                                    <textarea class="form-control" id="editSupportTypeDescription" rows="3">${type.description || ''}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-group with-icon">
+                                <label class="form-label">Durum</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-toggle-on"></i>
+                                    <select class="form-select" id="editSupportTypeIsActive">
+                                        <option value="1" ${type.is_active === 1 ? 'selected' : ''}>Aktif</option>
+                                        <option value="0" ${type.is_active === 0 ? 'selected' : ''}>Pasif</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group with-icon">
+                                <label class="form-label">Sıralama</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-sort-numeric-down"></i>
+                                    <input type="number" class="form-control" id="editSupportTypeSortOrder" value="${type.sort_order || 0}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                `, async () => {
+                    const typeData = {
+                        name: document.getElementById('editSupportTypeName').value.trim(),
+                        description: document.getElementById('editSupportTypeDescription').value.trim() || null,
+                        is_active: parseInt(document.getElementById('editSupportTypeIsActive').value),
+                        sort_order: parseInt(document.getElementById('editSupportTypeSortOrder').value) || 0
+                    };
+                    
+                    if (!typeData.name) {
+                        alert('Lütfen tip adı girin.');
+                        return;
+                    }
+                    
+                    try {
+                        const token = localStorage.getItem('authToken');
+                        const response = await fetch(`/api/support-types/${id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(typeData)
+                        });
+                        
+                        if (response.ok) {
+                            alert('Destek tipi başarıyla güncellendi!');
+                            bootstrap.Modal.getInstance(document.getElementById('editSupportTypeModal')).hide();
+                            loadSupportTypes();
+                        } else {
+                            const error = await response.json();
+                            alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                        }
+                    } catch (error) {
+                        alert('Hata: ' + error.message);
+                    }
+                });
+                
+                const modalElement = new bootstrap.Modal(document.getElementById('editSupportTypeModal'));
+                modalElement.show();
+            } catch (error) {
+                alert('Hata: ' + error.message);
+            }
+        }
+        
+        async function deleteSupportType(id) {
+            if (confirm('Bu tipi silmek istediğinizden emin misiniz?')) {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch(`/api/support-types/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok || response.status === 204) {
+                        alert('Destek tipi başarıyla silindi!');
+                        loadSupportTypes();
+                    } else {
+                        const error = await response.json();
+                        alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    }
+                } catch (error) {
+                    alert('Hata: ' + error.message);
+                }
+            }
+        }
+
+        // Load Priority Types
+        async function loadPriorityTypes() {
+            // TODO: Implement API call
+            const tbody = document.getElementById('priorityTypesTable');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Öncelik tipleri yakında eklenecek</td></tr>';
+            }
+        }
+
+        // Show Add Status Modal
+
+        // Initialize: Expand "Destek Yönetimi" menu on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const supportSubmenu = document.getElementById('support-submenu');
+            const supportMenuItem = document.querySelector('.nav-menu-item:has(#support-submenu)');
+            if (supportSubmenu && supportMenuItem) {
+                supportSubmenu.style.display = 'block';
+                supportMenuItem.classList.add('active');
+                const arrow = document.getElementById('support-arrow');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(180deg)';
+                }
+            }
+            
+            // Initialize filter panel as expanded
+            const filterCard = document.querySelector('.filter-card');
+            if (filterCard) {
+                filterCard.classList.add('active');
+            }
+            
+            // Initialize support settings submenu as expanded if on settings page
+            const supportSettingsSubmenu = document.getElementById('support-settings-submenu');
+            if (supportSettingsSubmenu) {
+                supportSettingsSubmenu.style.display = 'block';
+                const arrow = document.getElementById('support-settings-arrow');
+                if (arrow) {
+                    arrow.style.transform = 'rotate(180deg)';
+                }
+            }
+        });
+
+        // Filter Panel Toggle
+        function toggleFilterPanel() {
+            const filterCard = document.querySelector('.filter-card');
+            if (filterCard) {
+                filterCard.classList.toggle('active');
+            }
+        }
+
+        // Apply Filters
+        function applyFilters() {
+            const filters = {
+                startDate: document.getElementById('filterStartDate')?.value || '',
+                endDate: document.getElementById('filterEndDate')?.value || '',
+                customer: document.getElementById('filterCustomer')?.value || '',
+                ticketType: document.getElementById('filterTicketType')?.value || '',
+                status: document.getElementById('filterStatus')?.value || '',
+                priority: document.getElementById('filterPriority')?.value || '',
+                assigned: document.getElementById('filterAssigned')?.value || ''
+            };
+            
+            console.log('Applying filters:', filters);
+            // TODO: Implement filter logic
+            loadAllCases();
+        }
+
+        // Clear Filters
+        function clearFilters() {
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            document.getElementById('filterCustomer').value = '';
+            document.getElementById('filterTicketType').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterPriority').value = '';
+            document.getElementById('filterAssigned').value = '';
+            
+            loadAllCases();
+        }
+
+        // Export Functions
+        function exportToExcel() {
+            alert('Excel export özelliği yakında eklenecek');
+            // TODO: Implement Excel export
+        }
+
+        function exportToPDF() {
+            alert('PDF export özelliği yakında eklenecek');
+            // TODO: Implement PDF export
+        }
+
+        // Table Search
+        function filterTable() {
+            const searchTerm = document.getElementById('tableSearch')?.value.toLowerCase() || '';
+            const table = document.getElementById('allCasesTableBody');
+            const rows = table?.querySelectorAll('tr') || [];
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        // Table Sort
+        let currentSortColumn = null;
+        let sortDirection = 'asc';
+
+        function sortTable(column) {
+            const table = document.getElementById('allCasesTableBody');
+            if (!table) return;
+            
+            const rows = Array.from(table.querySelectorAll('tr'));
+            
+            // Toggle sort direction
+            if (currentSortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            // Remove all sort indicators
+            document.querySelectorAll('.table th i').forEach(icon => {
+                icon.className = 'fas fa-sort';
+            });
+            
+            // Add sort indicator to current column
+            const header = event?.target?.closest('th');
+            if (header) {
+                const icon = header.querySelector('i');
+                if (icon) {
+                    icon.className = sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+                }
+            }
+            
+            // TODO: Implement actual sorting logic based on column
+            console.log('Sorting by:', column, sortDirection);
+        }
+
+        // Pagination Functions
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let totalItems = 0;
+
+        function goToFirstPage() {
+            currentPage = 1;
+            loadAllCases();
+        }
+
+        function goToPreviousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadAllCases();
+            }
+        }
+
+        function goToNextPage() {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadAllCases();
+            }
+        }
+
+        function goToLastPage() {
+            currentPage = Math.ceil(totalItems / itemsPerPage);
+            loadAllCases();
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const start = (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, totalItems);
+            
+            document.getElementById('paginationInfo').textContent = 
+                totalItems > 0 ? `${start}-${end} / ${totalItems} kayıt` : 'Kayıt yok';
+            
+            document.getElementById('firstBtn').disabled = currentPage === 1;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+            document.getElementById('lastBtn').disabled = currentPage >= totalPages;
+        }
+
+        // Load All Cases
+        async function loadAllCases() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/cases', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('authToken');
+                    alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+                    window.location.replace('/');
+                    return;
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const cases = await response.json();
+                
+                if (!cases || !Array.isArray(cases)) {
+                    throw new Error('Geçersiz veri formatı');
+                }
+                
+                totalItems = cases.length;
+                updatePagination();
+                updateStatistics(cases);
+                
+                // Paginate cases
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const paginatedCases = cases.slice(start, end);
+                
+                const tbody = document.getElementById('allCasesTableBody');
+                if (cases.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center">Tabloda veri bulunmuyor</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = paginatedCases.map(caseItem => `
+                    <tr>
+                        <td>${caseItem.title || 'N/A'}</td>
+                        <td>${caseItem.customer?.name || 'N/A'}</td>
+                        <td>${caseItem.created_at ? new Date(caseItem.created_at).toLocaleDateString('tr-TR') : 'N/A'}</td>
+                        <td>${caseItem.support_type || 'N/A'}</td>
+                        <td><span class="badge badge-${getStatusBadgeClass(caseItem.status)}">${getStatusText(caseItem.status)}</span></td>
+                        <td><span class="badge badge-${getPriorityBadgeClass(caseItem.priority)}">${getPriorityText(caseItem.priority)}</span></td>
+                        <td>${caseItem.support_type || 'N/A'}</td>
+                        <td>${caseItem.assigned_users?.map(u => u.full_name).join(', ') || 'Atanmamış'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="viewCase(${caseItem.id})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading all cases:', error);
+                const tbody = document.getElementById('allCasesTableBody');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Hata: ' + (error.message || 'Bilinmeyen hata') + '</td></tr>';
+                }
+            }
+        }
+
+        function updateStatistics(cases) {
+            const total = cases.length;
+            const pending = cases.filter(c => c.status === 'pending').length;
+            const assigned = cases.filter(c => c.status === 'assigned' || c.status === 'in_progress').length;
+            const resolved = cases.filter(c => c.status === 'resolved' || c.status === 'closed').length;
+            
+            document.getElementById('totalCasesCount').textContent = total;
+            document.getElementById('pendingCasesCount').textContent = pending;
+            document.getElementById('assignedCasesCount').textContent = assigned;
+            document.getElementById('resolvedCasesCount').textContent = resolved;
+        }
+
+        function getStatusBadgeClass(status) {
+            const statusMap = {
+                'pending': 'warning',
+                'assigned': 'info',
+                'in_progress': 'primary',
+                'resolved': 'success',
+                'closed': 'success',
+                'cancelled': 'danger'
+            };
+            return statusMap[status] || 'secondary';
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'Bekleyen',
+                'assigned': 'Atandı',
+                'in_progress': 'Devam Ediyor',
+                'resolved': 'Çözüldü',
+                'closed': 'Kapatıldı',
+                'cancelled': 'İptal'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getPriorityBadgeClass(priority) {
+            const priorityMap = {
+                'low': 'info',
+                'medium': 'warning',
+                'high': 'danger'
+            };
+            return priorityMap[priority] || 'secondary';
+        }
+
+        function getPriorityText(priority) {
+            const priorityMap = {
+                'low': 'Düşük',
+                'medium': 'Orta',
+                'high': 'Yüksek'
+            };
+            return priorityMap[priority] || priority;
+        }
+
+        function viewCase(caseId) {
+            alert('Case detayı yakında eklenecek: ' + caseId);
+            // TODO: Implement case view modal
+        }
+
+        // Override switchTab to load cases when all-cases tab is selected
+        const originalSwitchTab = window.switchTab;
+        window.switchTab = function(tabName) {
+            if (typeof originalSwitchTab === 'function') {
+                originalSwitchTab(tabName);
+            } else {
+                // Fallback if original function doesn't exist
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.style.display = 'none';
+                });
+                const tabElement = document.getElementById(tabName);
+                if (tabElement) {
+                    tabElement.style.display = 'block';
+                }
+            }
+            
+            if (tabName === 'all-cases') {
+                loadAllCases();
+            }
+        };
+    </script>
 </body>
 </html>
-

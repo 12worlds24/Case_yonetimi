@@ -85,14 +85,18 @@ async function checkAuth() {
 
 // Show login form
 function showLogin() {
-    document.getElementById('loginForm').style.display = 'block';
-    document.getElementById('dashboard').style.display = 'none';
+    const loginContainer = document.getElementById('loginContainer');
+    const dashboard = document.getElementById('dashboard');
+    if (loginContainer) loginContainer.style.display = 'flex';
+    if (dashboard) dashboard.style.display = 'none';
 }
 
 // Show dashboard
 function showDashboard() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
+    const loginContainer = document.getElementById('loginContainer');
+    const dashboard = document.getElementById('dashboard');
+    if (loginContainer) loginContainer.style.display = 'none';
+    if (dashboard) dashboard.style.display = 'block';
     loadDashboard();
 }
 
@@ -123,16 +127,37 @@ async function loadDashboard() {
         
         // Populate cases table
         const tbody = document.getElementById('casesTable');
-        tbody.innerHTML = cases.map(caseItem => `
-            <tr>
-                <td>${caseItem.id}</td>
-                <td>${caseItem.title}</td>
-                <td>${caseItem.customer?.name || 'N/A'}</td>
-                <td><span class="badge bg-${getPriorityColor(caseItem.priority)}">${caseItem.priority}</span></td>
-                <td><span class="badge bg-secondary">${caseItem.status}</span></td>
-                <td>${new Date(caseItem.created_at).toLocaleDateString('tr-TR')}</td>
-            </tr>
-        `).join('');
+        if (cases.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center">Henüz case bulunmuyor</td></tr>';
+        } else {
+            tbody.innerHTML = cases.map(caseItem => `
+                <tr>
+                    <td>${caseItem.id}</td>
+                    <td><strong>${caseItem.title}</strong></td>
+                    <td>${caseItem.customer?.name || 'N/A'}</td>
+                    <td><span class="badge badge-${getPriorityColor(caseItem.priority)}">${getPriorityText(caseItem.priority)}</span></td>
+                    <td><span class="badge badge-secondary">${getStatusText(caseItem.status)}</span></td>
+                    <td>${new Date(caseItem.created_at).toLocaleDateString('tr-TR')}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="viewCase(${caseItem.id})">
+                            <i class="fas fa-eye"></i> Görüntüle
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Update user info
+        if (currentUser) {
+            const userInfo = document.getElementById('userInfo');
+            const userAvatar = document.getElementById('userAvatar');
+            if (userInfo) {
+                userInfo.textContent = currentUser.full_name || currentUser.email;
+            }
+            if (userAvatar && currentUser.full_name) {
+                userAvatar.textContent = currentUser.full_name.charAt(0).toUpperCase();
+            }
+        }
     } catch (error) {
         console.error('Error loading dashboard:', error);
     }
@@ -146,6 +171,49 @@ function getPriorityColor(priority) {
         'high': 'danger'
     };
     return colors[priority] || 'secondary';
+}
+
+// Get priority text
+function getPriorityText(priority) {
+    const texts = {
+        'low': 'Düşük',
+        'medium': 'Orta',
+        'high': 'Yüksek'
+    };
+    return texts[priority] || priority;
+}
+
+// Get status text
+function getStatusText(status) {
+    const texts = {
+        'bekleyen': 'Bekleyen',
+        'tamamlanan': 'Tamamlanan',
+        'iptal': 'İptal',
+        'transfer': 'Transfer'
+    };
+    return texts[status] || status;
+}
+
+// Show section
+function showSection(sectionId) {
+    // Implementation for section switching
+    console.log('Show section:', sectionId);
+}
+
+// Create new case
+function createNewCase() {
+    alert('Yeni case oluşturma özelliği yakında eklenecek');
+}
+
+// View case
+function viewCase(id) {
+    alert('Case detayı yakında eklenecek. Case ID: ' + id);
+}
+
+// Logout
+function logout() {
+    localStorage.removeItem('authToken');
+    window.location.replace('/');
 }
 
 // Show error message

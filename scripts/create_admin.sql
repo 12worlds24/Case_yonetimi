@@ -37,3 +37,6 @@ WHERE u.email = 'admin@3-d.com.tr'
     WHERE ur.user_id = u.id AND ur.role_id = r.id
   );
 
+
+
+

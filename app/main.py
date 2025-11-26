@@ -10,7 +10,7 @@ from app.config import config
 from app.database import init_database, create_tables
 from app.utils.logger import get_logger
 from app.utils.performance import get_monitor
-from app.api import auth, customers, products, cases, users
+from app.api import auth, customers, products, cases, users, support_status, support_type
 
 logger = get_logger("main")
 
@@ -134,6 +134,8 @@ app.include_router(customers.router)
 app.include_router(products.router)
 app.include_router(cases.router)
 app.include_router(users.router)
+app.include_router(support_status.router)
+app.include_router(support_type.router)
 # TODO: Include reports router when created
 # app.include_router(reports.router)
 
