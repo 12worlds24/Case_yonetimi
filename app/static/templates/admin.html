@@ -107,6 +107,23 @@
                                 </a></li>
                             </ul>
                         </li>
+                        <li class="nav-submenu-item">
+                            <a href="#" class="nav-submenu-link" onclick="toggleSubSubmenu(event, 'product-settings'); return false;">
+                                Ürün Ayarları
+                                <i class="fas fa-chevron-down nav-arrow" id="product-settings-arrow"></i>
+                            </a>
+                            <ul class="nav-sub-submenu" id="product-settings-submenu" style="display: none;">
+                                <li><a href="#" class="nav-sub-submenu-link" data-tab="products" onclick="switchTab('products'); return false;">
+                                    Ürünler
+                                </a></li>
+                                <li><a href="#" class="nav-sub-submenu-link" data-tab="product-categories" onclick="switchTab('product-categories'); return false;">
+                                    Ürün Kategorileri
+                                </a></li>
+                                <li><a href="#" class="nav-sub-submenu-link" data-tab="product-brands" onclick="switchTab('product-brands'); return false;">
+                                    Ürün Markaları
+                                </a></li>
+                            </ul>
+                        </li>
                     </ul>
                 </li>
 
@@ -465,26 +482,26 @@
                         <table class="table table-hover" id="allCasesTable">
                             <thead>
                                 <tr>
-                                    <th onclick="sortTable('title')">
-                                        BAŞLIK <i class="fas fa-sort"></i>
+                                    <th onclick="sortTable('id')">
+                                        ID <i class="fas fa-sort"></i>
                                     </th>
-                                    <th onclick="sortTable('customer')">
-                                        MÜŞTERİ <i class="fas fa-sort"></i>
+                                    <th onclick="sortTable('status')">
+                                        TICKET DURUMU <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th onclick="sortTable('ticket')">
+                                        TICKET <i class="fas fa-sort"></i>
                                     </th>
                                     <th onclick="sortTable('date')">
                                         TARİH <i class="fas fa-sort"></i>
                                     </th>
+                                    <th onclick="sortTable('customer')">
+                                        MÜŞTERİ <i class="fas fa-sort"></i>
+                                    </th>
                                     <th onclick="sortTable('type')">
                                         TÜR <i class="fas fa-sort"></i>
                                     </th>
-                                    <th onclick="sortTable('status')">
-                                        DURUM <i class="fas fa-sort"></i>
-                                    </th>
                                     <th onclick="sortTable('priority')">
                                         ÖNCELİK <i class="fas fa-sort"></i>
-                                    </th>
-                                    <th onclick="sortTable('channel')">
-                                        KANAL <i class="fas fa-sort"></i>
                                     </th>
                                     <th onclick="sortTable('assigned')">
                                         ATANAN <i class="fas fa-sort"></i>
@@ -650,6 +667,7 @@
                     </div>
                 </div>
             </div>
+        </div>
 
         <!-- Priority Types Tab -->
         <div class="tab-content" id="priority-types" style="display: none;">
@@ -661,23 +679,81 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <div class="card-body">
-                        <div class="table-container">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Öncelik Adı</th>
-                                        <th>Açıklama</th>
-                                        <th>Renk</th>
-                                        <th>İşlemler</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="priorityTypesTable">
-                                    <tr><td colspan="5" class="text-center">Yükleniyor...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Öncelik Adı</th>
+                                    <th>Açıklama</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="priorityTypesTable">
+                                <tr><td colspan="5" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Categories Tab -->
+        <div class="tab-content" id="product-categories" style="display: none;">
+            <div class="page-header">
+                <h2>Ürün Kategorileri</h2>
+                <button class="btn btn-primary" onclick="showAddProductCategoryModal()">
+                    <i class="fas fa-plus"></i> Yeni Kategori Ekle
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Kategori Adı</th>
+                                    <th>Açıklama</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productCategoriesTable">
+                                <tr><td colspan="5" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Brands Tab -->
+        <div class="tab-content" id="product-brands" style="display: none;">
+            <div class="page-header">
+                <h2>Ürün Markaları</h2>
+                <button class="btn btn-primary" onclick="showAddProductBrandModal()">
+                    <i class="fas fa-plus"></i> Yeni Marka Ekle
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Marka Adı</th>
+                                    <th>Açıklama</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productBrandsTable">
+                                <tr><td colspan="5" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -686,6 +762,7 @@
 
     <!-- Modals Container -->
     <div id="modalsContainer"></div>
+    <div id="toastContainer" class="toast-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/admin.js"></script>
@@ -787,7 +864,10 @@
                 'assigned-cases': 'Atanan Destek Talepleri',
                 'resolved-cases': 'Çözülen Destek Talepleri',
                 'financial': 'Finansal İşlemler',
-                'support-settings': 'Destek Ayarları'
+                'support-settings': 'Destek Ayarları',
+                'product-categories': 'Ürün Kategorileri',
+                'product-brands': 'Ürün Markaları',
+                'priority-types': 'Öncelik Tipleri'
             };
             const pageTitle = document.getElementById('pageTitle');
             if (pageTitle) {
@@ -801,6 +881,10 @@
                 loadSupportTypes();
             } else if (tabName === 'priority-types') {
                 loadPriorityTypes();
+            } else if (tabName === 'product-categories') {
+                loadProductCategories();
+            } else if (tabName === 'product-brands') {
+                loadProductBrands();
             }
             
             // Update sidebar active states
@@ -886,8 +970,8 @@
                 
                 if (response.status === 401 || response.status === 403) {
                     localStorage.removeItem('authToken');
-                    alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-                    window.location.replace('/');
+                    notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+                    setTimeout(() => window.location.replace('/'), 2000);
                     return;
                 }
                 
@@ -984,7 +1068,7 @@
                 };
                 
                 if (!statusData.name) {
-                    alert('Lütfen durum adı girin.');
+                    notifyWarning('Lütfen durum adı girin.');
                     return;
                 }
                 
@@ -1000,15 +1084,15 @@
                     });
                     
                     if (response.ok) {
-                        alert('Destek durumu başarıyla eklendi!');
+                        notifySuccess('Destek durumu başarıyla eklendi!');
                         bootstrap.Modal.getInstance(document.getElementById('addStatusModal')).hide();
                         loadSupportStatuses();
                     } else {
                         const error = await response.json();
-                        alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                        notifyError(error.detail || 'Bilinmeyen hata');
                     }
                 } catch (error) {
-                    alert('Hata: ' + error.message);
+                    notifyError(error.message);
                 }
             });
             
@@ -1074,7 +1158,7 @@
                     };
                     
                     if (!statusData.name) {
-                        alert('Lütfen durum adı girin.');
+                        notifyWarning('Lütfen durum adı girin.');
                         return;
                     }
                     
@@ -1090,22 +1174,22 @@
                         });
                         
                         if (response.ok) {
-                            alert('Destek durumu başarıyla güncellendi!');
+                            notifySuccess('Destek durumu başarıyla güncellendi!');
                             bootstrap.Modal.getInstance(document.getElementById('editStatusModal')).hide();
                             loadSupportStatuses();
                         } else {
                             const error = await response.json();
-                            alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                            notifyError(error.detail || 'Bilinmeyen hata');
                         }
                     } catch (error) {
-                        alert('Hata: ' + error.message);
+                        notifyError(error.message);
                     }
                 });
                 
                 const modalElement = new bootstrap.Modal(document.getElementById('editStatusModal'));
                 modalElement.show();
             } catch (error) {
-                alert('Hata: ' + error.message);
+                notifyError(error.message);
             }
         }
         
@@ -1119,14 +1203,14 @@
                     });
                     
                     if (response.ok || response.status === 204) {
-                        alert('Destek durumu başarıyla silindi!');
+                        notifySuccess('Destek durumu başarıyla silindi!');
                         loadSupportStatuses();
                     } else {
                         const error = await response.json();
-                        alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                        notifyError(error.detail || 'Bilinmeyen hata');
                     }
                 } catch (error) {
-                    alert('Hata: ' + error.message);
+                    notifyError(error.message);
                 }
             }
         }
@@ -1141,8 +1225,8 @@
                 
                 if (response.status === 401 || response.status === 403) {
                     localStorage.removeItem('authToken');
-                    alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-                    window.location.replace('/');
+                    notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+                    setTimeout(() => window.location.replace('/'), 2000);
                     return;
                 }
                 
@@ -1241,7 +1325,7 @@
                 };
                 
                 if (!typeData.name) {
-                    alert('Lütfen tip adı girin.');
+                    notifyWarning('Lütfen tip adı girin.');
                     return;
                 }
                 
@@ -1257,15 +1341,15 @@
                     });
                     
                     if (response.ok) {
-                        alert('Destek tipi başarıyla eklendi!');
+                        notifySuccess('Destek tipi başarıyla eklendi!');
                         bootstrap.Modal.getInstance(document.getElementById('addSupportTypeModal')).hide();
                         loadSupportTypes();
                     } else {
                         const error = await response.json();
-                        alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                        notifyError(error.detail || 'Bilinmeyen hata');
                     }
                 } catch (error) {
-                    alert('Hata: ' + error.message);
+                    notifyError(error.message);
                 }
             });
             
@@ -1331,7 +1415,7 @@
                     };
                     
                     if (!typeData.name) {
-                        alert('Lütfen tip adı girin.');
+                        notifyWarning('Lütfen tip adı girin.');
                         return;
                     }
                     
@@ -1347,22 +1431,22 @@
                         });
                         
                         if (response.ok) {
-                            alert('Destek tipi başarıyla güncellendi!');
+                            notifySuccess('Destek tipi başarıyla güncellendi!');
                             bootstrap.Modal.getInstance(document.getElementById('editSupportTypeModal')).hide();
                             loadSupportTypes();
                         } else {
                             const error = await response.json();
-                            alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                            notifyError(error.detail || 'Bilinmeyen hata');
                         }
                     } catch (error) {
-                        alert('Hata: ' + error.message);
+                        notifyError(error.message);
                     }
                 });
                 
                 const modalElement = new bootstrap.Modal(document.getElementById('editSupportTypeModal'));
                 modalElement.show();
             } catch (error) {
-                alert('Hata: ' + error.message);
+                notifyError(error.message);
             }
         }
         
@@ -1376,24 +1460,266 @@
                     });
                     
                     if (response.ok || response.status === 204) {
-                        alert('Destek tipi başarıyla silindi!');
+                        notifySuccess('Destek tipi başarıyla silindi!');
                         loadSupportTypes();
                     } else {
                         const error = await response.json();
-                        alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                        notifyError(error.detail || 'Bilinmeyen hata');
                     }
                 } catch (error) {
-                    alert('Hata: ' + error.message);
+                    notifyError(error.message);
                 }
             }
         }
 
         // Load Priority Types
         async function loadPriorityTypes() {
-            // TODO: Implement API call
-            const tbody = document.getElementById('priorityTypesTable');
-            if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Öncelik tipleri yakında eklenecek</td></tr>';
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/priority-types', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('authToken');
+                    notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+                    setTimeout(() => window.location.replace('/'), 2000);
+                    return;
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const priorities = await response.json();
+                const tbody = document.getElementById('priorityTypesTable');
+                if (!tbody) return;
+                
+                if (!priorities || !Array.isArray(priorities)) {
+                    throw new Error('Geçersiz veri formatı');
+                }
+                
+                if (priorities.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">Kayıt bulunamadı</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = priorities.map(priority => `
+                    <tr>
+                        <td>${priority.id}</td>
+                        <td><strong>${priority.name}</strong></td>
+                        <td>${priority.description || '-'}</td>
+                        <td><span class="badge badge-${priority.is_active === 1 ? 'success' : 'danger'}">${priority.is_active === 1 ? 'Aktif' : 'Pasif'}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editPriorityType(${priority.id})">
+                                <i class="fas fa-edit"></i> Düzenle
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deletePriorityType(${priority.id})">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading priority types:', error);
+                const tbody = document.getElementById('priorityTypesTable');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Hata: ' + (error.message || 'Bilinmeyen hata') + '</td></tr>';
+                }
+            }
+        }
+
+        function showAddPriorityTypeModal() {
+            const modal = createModal('addPriorityTypeModal', 'Yeni Öncelik Tipi Ekle', `
+                <form id="addPriorityTypeForm" class="modal-form">
+                    <div class="form-grid">
+                        <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                            <label class="form-label">Öncelik Adı *</label>
+                            <div class="input-icon">
+                                <i class="fas fa-bolt"></i>
+                                <input type="text" class="form-control" id="priorityName" placeholder="Örn: Kritik, Normal" required>
+                            </div>
+                        </div>
+                        <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                            <label class="form-label">Açıklama</label>
+                            <div class="input-icon">
+                                <i class="fas fa-align-left"></i>
+                                <textarea class="form-control" id="priorityDescription" placeholder="Öncelik açıklaması..." rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group with-icon">
+                            <label class="form-label">Durum</label>
+                            <div class="input-icon">
+                                <i class="fas fa-toggle-on"></i>
+                                <select class="form-select" id="priorityIsActive">
+                                    <option value="1" selected>Aktif</option>
+                                    <option value="0">Pasif</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group with-icon">
+                            <label class="form-label">Sıralama</label>
+                            <div class="input-icon">
+                                <i class="fas fa-sort-numeric-down"></i>
+                                <input type="number" class="form-control" id="prioritySortOrder" value="0" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            `, async () => {
+                const priorityData = {
+                    name: document.getElementById('priorityName').value.trim(),
+                    description: document.getElementById('priorityDescription').value.trim() || null,
+                    is_active: parseInt(document.getElementById('priorityIsActive').value, 10),
+                    sort_order: parseInt(document.getElementById('prioritySortOrder').value, 10) || 0
+                };
+                
+                if (!priorityData.name) {
+                    notifyWarning('Lütfen öncelik adı girin.');
+                    return;
+                }
+                
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch('/api/priority-types', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(priorityData)
+                    });
+                    
+                    if (response.ok) {
+                        notifySuccess('Öncelik tipi başarıyla eklendi!');
+                        bootstrap.Modal.getInstance(document.getElementById('addPriorityTypeModal')).hide();
+                        loadPriorityTypes();
+                    } else {
+                        const error = await response.json();
+                        notifyError(error.detail || 'Bilinmeyen hata');
+                    }
+                } catch (error) {
+                    notifyError(error.message);
+                }
+            });
+            
+            const modalElement = new bootstrap.Modal(document.getElementById('addPriorityTypeModal'));
+            modalElement.show();
+        }
+
+        async function editPriorityType(id) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/priority-types', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Öncelik tipleri yüklenemedi');
+                
+                const priorities = await response.json();
+                const priority = priorities.find(p => p.id === id);
+                if (!priority) throw new Error('Öncelik tipi bulunamadı');
+                
+                const modal = createModal('editPriorityTypeModal', 'Öncelik Tipi Düzenle', `
+                    <form id="editPriorityTypeForm" class="modal-form">
+                        <div class="form-grid">
+                            <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                                <label class="form-label">Öncelik Adı *</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-bolt"></i>
+                                    <input type="text" class="form-control" id="editPriorityName" value="${priority.name || ''}" required>
+                                </div>
+                            </div>
+                            <div class="form-group with-icon" style="grid-column: 1 / -1;">
+                                <label class="form-label">Açıklama</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-align-left"></i>
+                                    <textarea class="form-control" id="editPriorityDescription" rows="3">${priority.description || ''}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-group with-icon">
+                                <label class="form-label">Durum</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-toggle-on"></i>
+                                    <select class="form-select" id="editPriorityIsActive">
+                                        <option value="1" ${priority.is_active === 1 ? 'selected' : ''}>Aktif</option>
+                                        <option value="0" ${priority.is_active === 0 ? 'selected' : ''}>Pasif</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group with-icon">
+                                <label class="form-label">Sıralama</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-sort-numeric-down"></i>
+                                    <input type="number" class="form-control" id="editPrioritySortOrder" value="${priority.sort_order || 0}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                `, async () => {
+                    const priorityData = {
+                        name: document.getElementById('editPriorityName').value.trim(),
+                        description: document.getElementById('editPriorityDescription').value.trim() || null,
+                        is_active: parseInt(document.getElementById('editPriorityIsActive').value, 10),
+                        sort_order: parseInt(document.getElementById('editPrioritySortOrder').value, 10) || 0
+                    };
+                    
+                    if (!priorityData.name) {
+                        notifyWarning('Lütfen öncelik adı girin.');
+                        return;
+                    }
+                    
+                    try {
+                        const token = localStorage.getItem('authToken');
+                        const response = await fetch(`/api/priority-types/${id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(priorityData)
+                        });
+                        
+                        if (response.ok) {
+                            notifySuccess('Öncelik tipi başarıyla güncellendi!');
+                            bootstrap.Modal.getInstance(document.getElementById('editPriorityTypeModal')).hide();
+                            loadPriorityTypes();
+                        } else {
+                            const error = await response.json();
+                            notifyError(error.detail || 'Bilinmeyen hata');
+                        }
+                    } catch (error) {
+                        notifyError(error.message);
+                    }
+                });
+                
+                const modalElement = new bootstrap.Modal(document.getElementById('editPriorityTypeModal'));
+                modalElement.show();
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function deletePriorityType(id) {
+            if (confirm('Bu öncelik tipini silmek istediğinizden emin misiniz?')) {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response = await fetch(`/api/priority-types/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok || response.status === 204) {
+                        notifySuccess('Öncelik tipi başarıyla silindi!');
+                        loadPriorityTypes();
+                    } else {
+                        const error = await response.json();
+                        notifyError(error.detail || 'Bilinmeyen hata');
+                    }
+                } catch (error) {
+                    notifyError(error.message);
+                }
             }
         }
 
@@ -1469,12 +1795,12 @@
 
         // Export Functions
         function exportToExcel() {
-            alert('Excel export özelliği yakında eklenecek');
+            notifyInfo('Excel export özelliği yakında eklenecek');
             // TODO: Implement Excel export
         }
 
         function exportToPDF() {
-            alert('PDF export özelliği yakında eklenecek');
+            notifyInfo('PDF export özelliği yakında eklenecek');
             // TODO: Implement PDF export
         }
 
@@ -1580,8 +1906,8 @@
                 
                 if (response.status === 401 || response.status === 403) {
                     localStorage.removeItem('authToken');
-                    alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-                    window.location.replace('/');
+                    notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+                    setTimeout(() => window.location.replace('/'), 2000);
                     return;
                 }
                 
@@ -1611,23 +1937,32 @@
                     return;
                 }
                 
-                tbody.innerHTML = paginatedCases.map(caseItem => `
+                tbody.innerHTML = paginatedCases.map(caseItem => {
+                    const statusName = caseItem.status?.name || 'N/A';
+                    const statusColor = caseItem.status?.color || '#6c757d';
+                    const priorityName = caseItem.priority_type?.name || 'N/A';
+                    const supportTypeName = caseItem.support_type?.name || 'N/A';
+                    const assignedUsers = caseItem.assignments?.map(a => a.user?.full_name).filter(Boolean).join(', ') || (caseItem.assigned_user?.full_name || 'Atanmamış');
+                    const requestDate = caseItem.request_date ? new Date(caseItem.request_date).toLocaleString('tr-TR') : (caseItem.created_at ? new Date(caseItem.created_at).toLocaleString('tr-TR') : 'N/A');
+                    
+                    return `
                     <tr>
+                        <td>${caseItem.ticket_number || caseItem.id}</td>
+                        <td><span class="badge" style="background-color: ${statusColor}">${statusName}</span></td>
                         <td>${caseItem.title || 'N/A'}</td>
+                        <td>${requestDate}</td>
                         <td>${caseItem.customer?.name || 'N/A'}</td>
-                        <td>${caseItem.created_at ? new Date(caseItem.created_at).toLocaleDateString('tr-TR') : 'N/A'}</td>
-                        <td>${caseItem.support_type || 'N/A'}</td>
-                        <td><span class="badge badge-${getStatusBadgeClass(caseItem.status)}">${getStatusText(caseItem.status)}</span></td>
-                        <td><span class="badge badge-${getPriorityBadgeClass(caseItem.priority)}">${getPriorityText(caseItem.priority)}</span></td>
-                        <td>${caseItem.support_type || 'N/A'}</td>
-                        <td>${caseItem.assigned_users?.map(u => u.full_name).join(', ') || 'Atanmamış'}</td>
+                        <td>${supportTypeName}</td>
+                        <td><span class="badge badge-${getPriorityBadgeClass(caseItem.priority_type?.name)}">${priorityName}</span></td>
+                        <td>${assignedUsers}</td>
                         <td>
                             <button class="btn btn-sm btn-primary" onclick="viewCase(${caseItem.id})">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
             } catch (error) {
                 console.error('Error loading all cases:', error);
                 const tbody = document.getElementById('allCasesTableBody');
@@ -1639,9 +1974,9 @@
 
         function updateStatistics(cases) {
             const total = cases.length;
-            const pending = cases.filter(c => c.status === 'pending').length;
-            const assigned = cases.filter(c => c.status === 'assigned' || c.status === 'in_progress').length;
-            const resolved = cases.filter(c => c.status === 'resolved' || c.status === 'closed').length;
+            const pending = cases.filter(c => c.status?.name?.toLowerCase().includes('bekleyen') || c.status?.name?.toLowerCase().includes('pending')).length;
+            const assigned = cases.filter(c => c.status?.name?.toLowerCase().includes('atanan') || c.status?.name?.toLowerCase().includes('assigned') || c.assigned_user || (c.assignments && c.assignments.length > 0)).length;
+            const resolved = cases.filter(c => c.status?.name?.toLowerCase().includes('tamamlanan') || c.status?.name?.toLowerCase().includes('completed') || c.status?.name?.toLowerCase().includes('çözülen')).length;
             
             document.getElementById('totalCasesCount').textContent = total;
             document.getElementById('pendingCasesCount').textContent = pending;
@@ -1649,50 +1984,17 @@
             document.getElementById('resolvedCasesCount').textContent = resolved;
         }
 
-        function getStatusBadgeClass(status) {
-            const statusMap = {
-                'pending': 'warning',
-                'assigned': 'info',
-                'in_progress': 'primary',
-                'resolved': 'success',
-                'closed': 'success',
-                'cancelled': 'danger'
-            };
-            return statusMap[status] || 'secondary';
-        }
-
-        function getStatusText(status) {
-            const statusMap = {
-                'pending': 'Bekleyen',
-                'assigned': 'Atandı',
-                'in_progress': 'Devam Ediyor',
-                'resolved': 'Çözüldü',
-                'closed': 'Kapatıldı',
-                'cancelled': 'İptal'
-            };
-            return statusMap[status] || status;
-        }
-
-        function getPriorityBadgeClass(priority) {
-            const priorityMap = {
-                'low': 'info',
-                'medium': 'warning',
-                'high': 'danger'
-            };
-            return priorityMap[priority] || 'secondary';
-        }
-
-        function getPriorityText(priority) {
-            const priorityMap = {
-                'low': 'Düşük',
-                'medium': 'Orta',
-                'high': 'Yüksek'
-            };
-            return priorityMap[priority] || priority;
+        function getPriorityBadgeClass(priorityName) {
+            if (!priorityName) return 'secondary';
+            const name = priorityName.toLowerCase();
+            if (name.includes('düşük') || name.includes('low')) return 'info';
+            if (name.includes('orta') || name.includes('medium')) return 'warning';
+            if (name.includes('yüksek') || name.includes('high')) return 'danger';
+            return 'secondary';
         }
 
         function viewCase(caseId) {
-            alert('Case detayı yakında eklenecek: ' + caseId);
+            notifyInfo('Case detayı yakında eklenecek: ' + caseId);
             // TODO: Implement case view modal
         }
 

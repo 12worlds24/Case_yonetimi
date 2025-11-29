@@ -45,8 +45,8 @@ async function loadUsers() {
         
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
-            alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-            window.location.replace('/');
+            notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
         
@@ -201,7 +201,7 @@ function showAddUserModal() {
                 }
             };
             if (!roleIds.length) {
-                alert('Lütfen en az bir rol seçin.');
+                notifyWarning('Lütfen en az bir rol seçin.');
                 return;
             }
             
@@ -216,15 +216,15 @@ function showAddUserModal() {
                 });
                 
                 if (response.ok) {
-                    alert('Kullanıcı başarıyla eklendi!');
+                    notifySuccess('Kullanıcı başarıyla eklendi!');
                     bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
                     loadUsers();
                 } else {
                     const error = await response.json();
-                    alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    notifyError(error.detail || 'Bilinmeyen hata');
                 }
             } catch (error) {
-                alert('Hata: ' + error.message);
+                notifyError(error.message);
             }
         });
         
@@ -242,8 +242,8 @@ async function loadCustomers() {
         
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
-            alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-            window.location.replace('/');
+            notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
         
@@ -467,15 +467,15 @@ function showAddCustomerModal() {
             });
             
             if (response.ok) {
-                alert('Müşteri başarıyla eklendi!');
+                notifySuccess('Müşteri başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addCustomerModal')).hide();
                 loadCustomers();
             } else {
                 const error = await response.json();
-                alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                notifyError(error.detail || 'Bilinmeyen hata');
             }
         } catch (error) {
-            alert('Hata: ' + error.message);
+            notifyError(error.message);
         }
     });
     
@@ -492,8 +492,8 @@ async function loadProducts() {
         
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
-            alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-            window.location.replace('/');
+            notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
         
@@ -577,15 +577,15 @@ function showAddProductModal() {
             });
             
             if (response.ok) {
-                alert('Ürün başarıyla eklendi!');
+                notifySuccess('Ürün başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
                 loadProducts();
             } else {
                 const error = await response.json();
-                alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                notifyError(error.detail || 'Bilinmeyen hata');
             }
         } catch (error) {
-            alert('Hata: ' + error.message);
+            notifyError(error.message);
         }
     });
     
@@ -602,8 +602,8 @@ async function loadDepartments() {
         
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
-            alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-            window.location.replace('/');
+            notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
         
@@ -679,15 +679,15 @@ function showAddDepartmentModal() {
             });
             
             if (response.ok) {
-                alert('Departman başarıyla eklendi!');
+                notifySuccess('Departman başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addDepartmentModal')).hide();
                 loadDepartments();
             } else {
                 const error = await response.json();
-                alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                notifyError(error.detail || 'Bilinmeyen hata');
             }
         } catch (error) {
-            alert('Hata: ' + error.message);
+            notifyError(error.message);
         }
     });
     
@@ -704,8 +704,8 @@ async function loadRoles() {
         
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
-            alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-            window.location.replace('/');
+            notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
         
@@ -781,15 +781,15 @@ function showAddRoleModal() {
             });
             
             if (response.ok) {
-                alert('Rol başarıyla eklendi!');
+                notifySuccess('Rol başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addRoleModal')).hide();
                 loadRoles();
             } else {
                 const error = await response.json();
-                alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                notifyError(error.detail || 'Bilinmeyen hata');
             }
         } catch (error) {
-            alert('Hata: ' + error.message);
+            notifyError(error.message);
         }
     });
     
@@ -806,8 +806,8 @@ async function loadCases() {
         
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
-            alert('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-            window.location.replace('/');
+            notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
         
@@ -918,6 +918,60 @@ function createModal(id, title, body, onSave) {
     window[`save${id.charAt(0).toUpperCase() + id.slice(1)}`] = onSave;
     
     return document.getElementById(id);
+}
+
+const toastIcons = {
+    success: 'fas fa-circle-check',
+    error: 'fas fa-triangle-exclamation',
+    warning: 'fas fa-circle-exclamation',
+    info: 'fas fa-circle-info'
+};
+
+function showToast(type = 'success', title = 'Başarılı', message = 'İşlem tamamlandı') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon">
+            <i class="${toastIcons[type] || toastIcons.info}"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" aria-label="Kapat">&times;</button>
+    `;
+    
+    toast.querySelector('.toast-close').addEventListener('click', () => hideToast(toast));
+    
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    
+    setTimeout(() => hideToast(toast), 4000);
+}
+
+function hideToast(toast) {
+    if (!toast) return;
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+}
+
+function notifySuccess(message, title = 'Başarılı') {
+    showToast('success', title, message);
+}
+
+function notifyError(message, title = 'Hata') {
+    showToast('error', title, message);
+}
+
+function notifyWarning(message, title = 'Uyarı') {
+    showToast('warning', title, message);
+}
+
+function notifyInfo(message, title = 'Bilgi') {
+    showToast('info', title, message);
 }
 
 function getInputValue(id) {
@@ -1036,7 +1090,7 @@ async function editUser(id) {
             }
             
             if (!roleIds.length) {
-                alert('Lütfen en az bir rol seçin.');
+                notifyWarning('Lütfen en az bir rol seçin.');
                 return;
             }
             
@@ -1051,22 +1105,22 @@ async function editUser(id) {
                 });
                 
                 if (response.ok) {
-                    alert('Kullanıcı başarıyla güncellendi!');
+                    notifySuccess('Kullanıcı başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
                     loadUsers();
                 } else {
                     const error = await response.json();
-                    alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    notifyError(error.detail || 'Bilinmeyen hata');
                 }
             } catch (error) {
-                alert('Hata: ' + error.message);
+                notifyError(error.message);
             }
         });
         
         const modalElement = new bootstrap.Modal(document.getElementById('editUserModal'));
         modalElement.show();
     } catch (error) {
-        alert('Hata: ' + error.message);
+        notifyError(error.message);
     }
 }
 async function deleteUser(id) { 
@@ -1077,14 +1131,14 @@ async function deleteUser(id) {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
             if (response.ok || response.status === 204) {
-                alert('Kullanıcı silindi!');
+                notifySuccess('Kullanıcı başarıyla silindi!');
                 loadUsers();
             } else {
                 const error = await response.json();
-                alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                notifyError(error.detail || 'Bilinmeyen hata');
             }
         } catch (error) {
-            alert('Hata: ' + error.message);
+            notifyError(error.message);
         }
     }
 }
@@ -1150,22 +1204,22 @@ async function editCustomer(id) {
                 });
                 
                 if (response.ok) {
-                    alert('Müşteri başarıyla güncellendi!');
+                    notifySuccess('Müşteri başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editCustomerModal')).hide();
                     loadCustomers();
                 } else {
                     const error = await response.json();
-                    alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    notifyError(error.detail || 'Bilinmeyen hata');
                 }
             } catch (error) {
-                alert('Hata: ' + error.message);
+                notifyError(error.message);
             }
         });
         
         const modalElement = new bootstrap.Modal(document.getElementById('editCustomerModal'));
         modalElement.show();
     } catch (error) {
-        alert('Hata: ' + error.message);
+        notifyError(error.message);
     }
 }
 function deleteCustomer(id) { 
@@ -1238,22 +1292,22 @@ async function editProduct(id) {
                 });
                 
                 if (response.ok) {
-                    alert('Ürün başarıyla güncellendi!');
+                    notifySuccess('Ürün başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
                     loadProducts();
                 } else {
                     const error = await response.json();
-                    alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    notifyError(error.detail || 'Bilinmeyen hata');
                 }
             } catch (error) {
-                alert('Hata: ' + error.message);
+                notifyError(error.message);
             }
         });
         
         const modalElement = new bootstrap.Modal(document.getElementById('editProductModal'));
         modalElement.show();
     } catch (error) {
-        alert('Hata: ' + error.message);
+        notifyError(error.message);
     }
 }
 function deleteProduct(id) { 
@@ -1312,22 +1366,22 @@ async function editDepartment(id) {
                 });
                 
                 if (response.ok) {
-                    alert('Departman başarıyla güncellendi!');
+                    notifySuccess('Departman başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editDepartmentModal')).hide();
                     loadDepartments();
                 } else {
                     const error = await response.json();
-                    alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    notifyError(error.detail || 'Bilinmeyen hata');
                 }
             } catch (error) {
-                alert('Hata: ' + error.message);
+                notifyError(error.message);
             }
         });
         
         const modalElement = new bootstrap.Modal(document.getElementById('editDepartmentModal'));
         modalElement.show();
     } catch (error) {
-        alert('Hata: ' + error.message);
+        notifyError(error.message);
     }
 }
 
@@ -1340,14 +1394,14 @@ async function deleteDepartment(id) {
             });
             
             if (response.ok) {
-                alert('Departman başarıyla silindi!');
+                notifySuccess('Departman başarıyla silindi!');
                 loadDepartments();
             } else {
                 const error = await response.json();
-                alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                notifyError(error.detail || 'Bilinmeyen hata');
             }
         } catch (error) {
-            alert('Hata: ' + error.message);
+            notifyError(error.message);
         }
     }
 }
@@ -1400,22 +1454,22 @@ async function editRole(id) {
                 });
                 
                 if (response.ok) {
-                    alert('Rol başarıyla güncellendi!');
+                    notifySuccess('Rol başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editRoleModal')).hide();
                     loadRoles();
                 } else {
                     const error = await response.json();
-                    alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                    notifyError(error.detail || 'Bilinmeyen hata');
                 }
             } catch (error) {
-                alert('Hata: ' + error.message);
+                notifyError(error.message);
             }
         });
         
         const modalElement = new bootstrap.Modal(document.getElementById('editRoleModal'));
         modalElement.show();
     } catch (error) {
-        alert('Hata: ' + error.message);
+        notifyError(error.message);
     }
 }
 
@@ -1428,16 +1482,445 @@ async function deleteRole(id) {
             });
             
             if (response.ok) {
-                alert('Rol başarıyla silindi!');
+                notifySuccess('Rol başarıyla silindi!');
                 loadRoles();
             } else {
                 const error = await response.json();
-                alert('Hata: ' + (error.detail || 'Bilinmeyen hata'));
+                notifyError(error.detail || 'Bilinmeyen hata');
             }
         } catch (error) {
-            alert('Hata: ' + error.message);
+            notifyError(error.message);
         }
     }
 }
-function viewCase(id) { alert('Case detayı yakında eklenecek'); }
+function viewCase(id) { notifyInfo('Case detayı yakında eklenecek'); }
+
+// ========== CASES ==========
+let customers = [];
+let products = [];
+let supportStaff = [];
+let allUsers = [];
+let supportTypes = [];
+let supportStatuses = [];
+let priorityTypes = [];
+let selectedStaffIds = new Set(); // For tag-based staff selection
+
+async function loadCaseData() {
+    try {
+        [customers, products, supportStaff, allUsers, supportTypes, supportStatuses, priorityTypes] = await Promise.all([
+            fetch(`${API_BASE}/customers`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE}/products`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE}/users/support-staff`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE}/users`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE}/support-types`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE}/support-statuses`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE}/priority-types`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : [])
+        ]);
+    } catch (error) {
+        console.error('Error loading case data:', error);
+    }
+}
+
+async function showAddCaseModal() {
+    await loadCaseData();
+    
+    // Get current user info
+    const currentUserInfo = await fetch(`${API_BASE}/users/me`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    }).then(r => r.ok ? r.json() : null).catch(() => null);
+    
+    // Set default request date (now)
+    const now = new Date();
+    const requestDateStr = now.toISOString().slice(0, 16);
+    
+    const modalHTML = `
+        <div class="modal fade" id="addCaseModal" tabindex="-1">
+            <div class="modal-dialog modal-fullscreen-lg-down" style="max-width: 95vw;">
+                <div class="modal-content" style="max-height: 95vh;">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Yeni Destek Talebi Ekle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="overflow-y: auto; max-height: calc(95vh - 120px);">
+                        <form id="addCaseForm">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label class="form-label">Başlık <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-sm" id="caseTitle" required placeholder="Destek talebi başlığı">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Talep Tarihi <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" class="form-control form-control-sm" id="caseRequestDate" value="${requestDateStr}" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Müşteri <span class="text-danger">*</span></label>
+                                    <select class="form-select form-select-sm" id="caseCustomer" required>
+                                        <option value="">Müşteri Seçin</option>
+                                        ${customers.filter(c => c.is_active !== 0).map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Ürün</label>
+                                    <select class="form-select form-select-sm" id="caseProduct">
+                                        <option value="">Ürün Seçin</option>
+                                        ${products.filter(p => p.is_active !== 0).map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Atanan Kullanıcı</label>
+                                    <select class="form-select form-select-sm" id="caseAssignedTo">
+                                        <option value="">Kullanıcı Seçin</option>
+                                        ${allUsers.filter(u => u.is_active === 1).map(u => `<option value="${u.id}" ${currentUserInfo && u.id === currentUserInfo.id ? 'selected' : ''} data-dept="${u.department?.name || ''}">${u.full_name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Departman</label>
+                                    <input type="text" class="form-control form-control-sm" id="caseDepartment" readonly>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Ticket Türü <span class="text-danger">*</span></label>
+                                    <select class="form-select form-select-sm" id="caseSupportType" required>
+                                        <option value="">Ticket Türü Seçin</option>
+                                        ${supportTypes.filter(st => st.is_active === 1).map(st => `<option value="${st.id}">${st.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Ticket Durumu <span class="text-danger">*</span></label>
+                                    <select class="form-select form-select-sm" id="caseStatus" required>
+                                        <option value="">Durum Seçin</option>
+                                        ${supportStatuses.filter(ss => ss.is_active === 1).map(ss => `<option value="${ss.id}">${ss.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Öncelik <span class="text-danger">*</span></label>
+                                    <select class="form-select form-select-sm" id="casePriority" required>
+                                        <option value="">Öncelik Seçin</option>
+                                        ${priorityTypes.filter(pt => pt.is_active === 1).map(pt => `<option value="${pt.id}">${pt.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Harcanan Zaman (dakika)</label>
+                                    <input type="number" class="form-control form-control-sm" id="caseTimeSpent" readonly>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Başlangıç Tarihi</label>
+                                    <input type="datetime-local" class="form-control form-control-sm" id="caseStartDate">
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Bitiş Tarihi</label>
+                                    <input type="datetime-local" class="form-control form-control-sm" id="caseEndDate">
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label small">Dosya Ekle</label>
+                                    <input type="file" class="form-control form-control-sm" id="caseFiles" multiple>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Talep <span class="text-danger">*</span></label>
+                                    <textarea class="form-control form-control-sm" id="caseDescription" rows="4" required placeholder="Talep detaylarını buraya yazın. Resim yapıştırabilirsiniz (Ctrl+V)"></textarea>
+                                    <small class="form-text text-muted" style="font-size: 0.75rem;">Resim yapıştırmak için Ctrl+V kullanabilirsiniz</small>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Çözüm</label>
+                                    <textarea class="form-control form-control-sm" id="caseSolution" rows="4" placeholder="Çözüm detaylarını buraya yazın. Resim ve dosya ekleyebilirsiniz"></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 mb-2">
+                                    <label class="form-label small">Destek Personeli Ekle</label>
+                                    <div class="support-staff-tag-container" id="caseSupportStaffContainer">
+                                        <div class="selected-staff-tags" id="selectedStaffTags" style="min-height: 35px; padding: 6px; border: 1px solid #dee2e6; border-radius: 0.375rem; background-color: #f8f9fa; display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;">
+                                            <!-- Selected users will appear here as tags -->
+                                        </div>
+                                        <div class="staff-search-wrapper" style="position: relative;">
+                                            <input type="text" class="form-control form-control-sm" id="staffSearchInput" placeholder="Kullanıcı ara ve seç..." autocomplete="off" style="width: 100%;">
+                                            <div class="staff-dropdown" id="staffDropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 2px;">
+                                                <!-- Search results will appear here -->
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="caseSupportStaff" name="caseSupportStaff">
+                                    </div>
+                                    <small class="form-text text-muted" style="font-size: 0.75rem;">Kullanıcı adı yazarak arayın ve seçin</small>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="saveCase()">Kaydet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('addCaseModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Initialize modal
+    const modalElement = new bootstrap.Modal(document.getElementById('addCaseModal'));
+    
+    // Set up event listeners
+    const assignedToSelect = document.getElementById('caseAssignedTo');
+    if (assignedToSelect) {
+        assignedToSelect.addEventListener('change', function() {
+            const userId = this.value;
+            const selectedOption = this.options[this.selectedIndex];
+            const deptInput = document.getElementById('caseDepartment');
+            
+            if (userId && selectedOption) {
+                // Get department from data attribute or find user in allUsers
+                let deptName = selectedOption.getAttribute('data-dept');
+                if (!deptName) {
+                    const user = allUsers.find(u => u.id === parseInt(userId));
+                    deptName = user?.department?.name || '';
+                }
+                if (deptInput) {
+                    deptInput.value = deptName;
+                }
+            } else if (deptInput) {
+                deptInput.value = '';
+            }
+        });
+        
+        // Trigger change if default user is selected
+        if (currentUserInfo) {
+            assignedToSelect.dispatchEvent(new Event('change'));
+        }
+    }
+    
+    // Calculate time spent when start/end dates change
+    const startDateInput = document.getElementById('caseStartDate');
+    const endDateInput = document.getElementById('caseEndDate');
+    const timeSpentInput = document.getElementById('caseTimeSpent');
+    
+    function calculateTimeSpent() {
+        if (startDateInput && endDateInput && timeSpentInput && startDateInput.value && endDateInput.value) {
+            const start = new Date(startDateInput.value);
+            const end = new Date(endDateInput.value);
+            const diffMinutes = Math.round((end - start) / (1000 * 60));
+            timeSpentInput.value = diffMinutes > 0 ? diffMinutes : 0;
+        } else if (timeSpentInput) {
+            timeSpentInput.value = '';
+        }
+    }
+    
+    if (startDateInput) startDateInput.addEventListener('change', calculateTimeSpent);
+    if (endDateInput) endDateInput.addEventListener('change', calculateTimeSpent);
+    
+    // Handle image paste in textareas
+    const descriptionTextarea = document.getElementById('caseDescription');
+    const solutionTextarea = document.getElementById('caseSolution');
+    
+    [descriptionTextarea, solutionTextarea].forEach(textarea => {
+        if (textarea) {
+            textarea.addEventListener('paste', async function(e) {
+                const items = e.clipboardData.items;
+                for (let item of items) {
+                    if (item.type.indexOf('image') !== -1) {
+                        e.preventDefault();
+                        const blob = item.getBlob();
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const img = document.createElement('img');
+                            img.src = event.target.result;
+                            img.style.maxWidth = '100%';
+                            img.style.height = 'auto';
+                            const cursorPos = textarea.selectionStart;
+                            const textBefore = textarea.value.substring(0, cursorPos);
+                            const textAfter = textarea.value.substring(cursorPos);
+                            textarea.value = textBefore + '\n[Resim]\n' + textAfter;
+                        };
+                        reader.readAsDataURL(blob);
+                    }
+                }
+            });
+        }
+    });
+    
+    // Handle support staff tag-based selection
+    selectedStaffIds.clear(); // Reset when modal opens
+    const staffSearchInput = document.getElementById('staffSearchInput');
+    const staffDropdown = document.getElementById('staffDropdown');
+    const selectedStaffTags = document.getElementById('selectedStaffTags');
+    
+    function renderSelectedTags() {
+        if (selectedStaffIds.size === 0) {
+            selectedStaffTags.innerHTML = '<span class="text-muted" style="font-size: 0.875rem;">Henüz kullanıcı seçilmedi</span>';
+            return;
+        }
+        
+        selectedStaffTags.innerHTML = Array.from(selectedStaffIds).map(userId => {
+            const user = allUsers.find(u => u.id === parseInt(userId));
+            if (!user) return '';
+            return `
+                <span class="staff-tag">
+                    <span class="tag-name">${user.full_name}</span>
+                    <span class="tag-remove" onclick="removeStaffTag(${user.id})" title="Kaldır">×</span>
+                </span>
+            `;
+        }).join('');
+    }
+    
+    function filterStaff(searchTerm) {
+        const term = searchTerm.toLowerCase().trim();
+        if (!term) {
+            staffDropdown.style.display = 'none';
+            return;
+        }
+        
+        const filtered = allUsers.filter(u => 
+            u.is_active === 1 && 
+            !selectedStaffIds.has(u.id) &&
+            (u.full_name.toLowerCase().includes(term) || 
+             (u.department && u.department.name.toLowerCase().includes(term)) ||
+             (u.email && u.email.toLowerCase().includes(term)))
+        );
+        
+        if (filtered.length === 0) {
+            staffDropdown.innerHTML = '<div class="staff-dropdown-empty">Kullanıcı bulunamadı</div>';
+        } else {
+            staffDropdown.innerHTML = filtered.map(user => `
+                <div class="staff-dropdown-item" onclick="selectStaff(${user.id})">
+                    <div class="staff-name">${user.full_name}</div>
+                    <div class="staff-info">
+                        ${user.department ? user.department.name : ''}
+                        ${user.roles && user.roles.length > 0 ? ` • ${user.roles.map(r => r.name).join(', ')}` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        staffDropdown.style.display = 'block';
+    }
+    
+    // Make functions available globally for onclick handlers
+    window.selectStaff = function(userId) {
+        selectedStaffIds.add(userId);
+        renderSelectedTags();
+        const input = document.getElementById('staffSearchInput');
+        const dropdown = document.getElementById('staffDropdown');
+        if (input) {
+            input.value = '';
+            if (dropdown) dropdown.style.display = 'none';
+            input.focus();
+        }
+    };
+    
+    window.removeStaffTag = function(userId) {
+        selectedStaffIds.delete(userId);
+        renderSelectedTags();
+    };
+    
+    if (staffSearchInput) {
+        staffSearchInput.addEventListener('input', function(e) {
+            filterStaff(e.target.value);
+        });
+        
+        staffSearchInput.addEventListener('focus', function() {
+            if (this.value.trim()) {
+                filterStaff(this.value);
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!staffSearchInput.contains(e.target) && !staffDropdown.contains(e.target)) {
+                staffDropdown.style.display = 'none';
+            }
+        });
+    }
+    
+    // Initialize
+    renderSelectedTags();
+    
+    modalElement.show();
+}
+
+async function saveCase() {
+    const form = document.getElementById('addCaseForm');
+    if (!form || !form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    try {
+        const caseData = {
+            title: document.getElementById('caseTitle').value || 'Destek Talebi',
+            description: document.getElementById('caseDescription').value,
+            request_date: document.getElementById('caseRequestDate').value,
+            customer_id: parseInt(document.getElementById('caseCustomer').value),
+            product_id: document.getElementById('caseProduct').value ? parseInt(document.getElementById('caseProduct').value) : null,
+            assigned_to: document.getElementById('caseAssignedTo').value ? parseInt(document.getElementById('caseAssignedTo').value) : null,
+            department_id: null, // Will be set from assigned user
+            priority_type_id: parseInt(document.getElementById('casePriority').value),
+            support_type_id: parseInt(document.getElementById('caseSupportType').value),
+            status_id: parseInt(document.getElementById('caseStatus').value),
+            solution: document.getElementById('caseSolution').value || null,
+            start_date: document.getElementById('caseStartDate').value || null,
+            end_date: document.getElementById('caseEndDate').value || null,
+            time_spent_minutes: document.getElementById('caseTimeSpent').value ? parseInt(document.getElementById('caseTimeSpent').value) : null,
+            assigned_user_ids: Array.from(selectedStaffIds).map(id => parseInt(id))
+        };
+        
+        // Get department from assigned user
+        if (caseData.assigned_to) {
+            const user = allUsers.find(u => u.id === caseData.assigned_to);
+            if (user && user.department) {
+                caseData.department_id = user.department.id;
+            }
+        }
+        
+        const response = await fetch(`${API_BASE}/cases`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(caseData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            
+            // Upload files if any
+            const filesInput = document.getElementById('caseFiles');
+            if (filesInput && filesInput.files.length > 0) {
+                for (let file of filesInput.files) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    await fetch(`${API_BASE}/cases/${result.id}/files`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${authToken}` },
+                        body: formData
+                    });
+                }
+            }
+            
+            notifySuccess('Destek talebi başarıyla oluşturuldu!');
+            bootstrap.Modal.getInstance(document.getElementById('addCaseModal')).hide();
+            loadAllCases();
+        } else {
+            const error = await response.json();
+            notifyError(error.detail || 'Bilinmeyen hata');
+        }
+    } catch (error) {
+        notifyError(error.message);
+    }
+}
 

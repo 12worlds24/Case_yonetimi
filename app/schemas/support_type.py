@@ -36,3 +36,6 @@ class SupportTypeResponse(SupportTypeBase):
     class Config:
         from_attributes = True
 
+
+
+

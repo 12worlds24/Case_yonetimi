@@ -18,3 +18,6 @@ class SupportStatus(BaseModel):
     def __repr__(self):
         return f"<SupportStatus(id={self.id}, name='{self.name}')>"
 
+
+
+

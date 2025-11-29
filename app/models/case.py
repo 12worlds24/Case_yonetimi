@@ -1,60 +1,42 @@
 """
 Case/Ticket models
 """
-from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, JSON, Enum as SQLEnum, func
+from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, JSON, func
 from sqlalchemy.orm import relationship
 from datetime import datetime
-import enum
 from app.models.base import BaseModel
-
-
-class PriorityType(enum.Enum):
-    """Priority types"""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-
-
-class SupportType(enum.Enum):
-    """Support types"""
-    EMAIL = "email"
-    REMOTE = "uzaktan"
-    ONSITE = "yerinde"
-
-
-class CaseStatus(enum.Enum):
-    """Case status types"""
-    PENDING = "bekleyen"
-    TRANSFER = "transfer"
-    CANCELLED = "iptal"
-    COMPLETED = "tamamlanan"
 
 
 class Case(BaseModel):
     """Case/Ticket model"""
     __tablename__ = "cases"
     
+    # Unique ticket number
+    ticket_number = Column(String(50), nullable=False, unique=True, index=True)
+    
     # Basic information
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=False)
+    request_date = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)
     customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False, index=True)
     customer_contact_id = Column(Integer, nullable=True)  # Customer contact person ID
     product_id = Column(Integer, ForeignKey('products.id'), nullable=True, index=True)
     
     # Assignment
     created_by = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
+    assigned_to = Column(Integer, ForeignKey('users.id'), nullable=True, index=True)  # Main assigned user
     department_id = Column(Integer, ForeignKey('departments.id'), nullable=True, index=True)
     
-    # Case details
-    priority = Column(SQLEnum(PriorityType), nullable=False, default=PriorityType.MEDIUM)
-    support_type = Column(SQLEnum(SupportType), nullable=False, default=SupportType.EMAIL)
-    status = Column(SQLEnum(CaseStatus), nullable=False, default=CaseStatus.PENDING, index=True)
+    # Case details - using foreign keys to configurable tables
+    priority_type_id = Column(Integer, ForeignKey('priority_types.id'), nullable=True, index=True)
+    support_type_id = Column(Integer, ForeignKey('support_types.id'), nullable=True, index=True)
+    status_id = Column(Integer, ForeignKey('support_statuses.id'), nullable=True, index=True)
     
     # Resolution
     solution = Column(Text, nullable=True)
     start_date = Column(DateTime(timezone=True), nullable=True)
     end_date = Column(DateTime(timezone=True), nullable=True)
-    time_spent_hours = Column(Integer, nullable=True)  # Hours spent (can be manually adjusted)
+    time_spent_minutes = Column(Integer, nullable=True)  # Minutes spent (can be manually adjusted)
     
     # Flexible data
     custom_data = Column(JSON, nullable=True)  # JSONB for dynamic fields
@@ -63,17 +45,21 @@ class Case(BaseModel):
     customer = relationship("Customer", back_populates="cases")
     product = relationship("Product", back_populates="cases")
     creator = relationship("User", foreign_keys=[created_by], back_populates="created_cases")
+    assigned_user = relationship("User", foreign_keys=[assigned_to])
     department = relationship("Department", back_populates="cases")
+    priority_type = relationship("PriorityType", foreign_keys=[priority_type_id])
+    support_type = relationship("SupportType", foreign_keys=[support_type_id])
+    status = relationship("SupportStatus", foreign_keys=[status_id])
     assignments = relationship("CaseAssignment", back_populates="case", cascade="all, delete-orphan")
     comments = relationship("CaseComment", back_populates="case", cascade="all, delete-orphan")
     files = relationship("CaseFile", back_populates="case", cascade="all, delete-orphan")
     history = relationship("CaseHistory", back_populates="case", cascade="all, delete-orphan")
     
     def calculate_time_spent(self) -> int:
-        """Calculate time spent in hours"""
+        """Calculate time spent in minutes"""
         if self.start_date and self.end_date:
             delta = self.end_date - self.start_date
-            return int(delta.total_seconds() / 3600)
+            return int(delta.total_seconds() / 60)
         return 0
     
     def __repr__(self):

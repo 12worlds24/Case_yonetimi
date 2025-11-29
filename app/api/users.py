@@ -17,6 +17,29 @@ logger = get_logger("api.users")
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
 
+@router.get("/me", response_model=UserResponse)
+@retry_database
+async def get_current_user_info(
+    current_user: UserModel = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get current user information"""
+    try:
+        from sqlalchemy.orm import joinedload
+        user = db.query(UserModel).options(
+            joinedload(UserModel.department),
+            joinedload(UserModel.roles)
+        ).filter(UserModel.id == current_user.id).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error getting current user: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve user information")
+
+
 @router.get("/", response_model=List[UserResponse])
 @retry_database
 async def get_users(
@@ -243,6 +266,32 @@ async def get_roles(
     except Exception as e:
         logger.exception(f"Error getting roles: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve roles")
+
+
+@router.get("/support-staff", response_model=List[UserResponse])
+@retry_database
+async def get_support_staff(
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_active_user)
+):
+    """Get list of support staff (users with 'Destek Personeli' role)"""
+    try:
+        from sqlalchemy.orm import joinedload
+        support_role = db.query(Role).filter(Role.name == "Destek Personeli").first()
+        if not support_role:
+            return []
+        
+        users = db.query(UserModel).options(
+            joinedload(UserModel.department),
+            joinedload(UserModel.roles)
+        ).filter(
+            UserModel.is_active == 1,
+            UserModel.roles.contains(support_role)
+        ).all()
+        return users
+    except Exception as e:
+        logger.exception(f"Error getting support staff: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve support staff")
 
 
 @router.post("/roles", response_model=RoleResponse, status_code=status.HTTP_201_CREATED)
