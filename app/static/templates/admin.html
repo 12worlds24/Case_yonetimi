@@ -122,6 +122,12 @@
                                 <li><a href="#" class="nav-sub-submenu-link" data-tab="product-brands" onclick="switchTab('product-brands'); return false;">
                                     Ürün Markaları
                                 </a></li>
+                                <li><a href="#" class="nav-sub-submenu-link" data-tab="services" onclick="switchTab('services'); return false;">
+                                    Hizmetler
+                                </a></li>
+                                <li><a href="#" class="nav-sub-submenu-link" data-tab="service-categories" onclick="switchTab('service-categories'); return false;">
+                                    Hizmet Kategorileri
+                                </a></li>
                             </ul>
                         </li>
                     </ul>
@@ -129,7 +135,7 @@
 
                 <!-- Ana Sayfa -->
                 <li class="nav-menu-item">
-                    <a href="/" class="nav-menu-link">
+                    <a href="#" class="nav-menu-link" onclick="switchTab('all-cases'); return false;">
                         <i class="fas fa-home"></i> Ana Sayfa
                     </a>
                 </li>
@@ -202,10 +208,10 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Ad</th>
-                                    <th>Şirket</th>
+                                    <th>Firma İsmi</th>
                                     <th>Email</th>
-                                    <th>Telefon</th>
+                                    <th>Vergi No</th>
+                                    <th>Vergi Dairesi</th>
                                     <th>İşlemler</th>
                                 </tr>
                             </thead>
@@ -236,11 +242,12 @@
                                     <th>Ad</th>
                                     <th>Kod</th>
                                     <th>Kategori</th>
+                                    <th>Marka</th>
                                     <th>İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody id="productsTable">
-                                <tr><td colspan="5" class="text-center">Yükleniyor...</td></tr>
+                                <tr><td colspan="6" class="text-center">Yükleniyor...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -729,6 +736,68 @@
             </div>
         </div>
 
+        <!-- Services Tab -->
+        <div class="tab-content" id="services" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Hizmetler</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showAddServiceModal()">
+                        <i class="fas fa-plus"></i> Yeni Hizmet Ekle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Hizmet Adı</th>
+                                    <th>Kategori</th>
+                                    <th>Durum</th>
+                                    <th>Sıra</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="servicesTable">
+                                <tr><td colspan="6" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Categories Tab -->
+        <div class="tab-content" id="service-categories" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Hizmet Kategorileri</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showAddServiceCategoryModal()">
+                        <i class="fas fa-plus"></i> Yeni Kategori Ekle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Kategori Adı</th>
+                                    <th>Açıklama</th>
+                                    <th>Durum</th>
+                                    <th>Sıra</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="serviceCategoriesTable">
+                                <tr><td colspan="6" class="text-center">Yükleniyor...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Product Brands Tab -->
         <div class="tab-content" id="product-brands" style="display: none;">
             <div class="page-header">
@@ -745,13 +814,14 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Marka Adı</th>
+                                    <th>Kategori</th>
                                     <th>Açıklama</th>
                                     <th>Durum</th>
                                     <th>İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody id="productBrandsTable">
-                                <tr><td colspan="5" class="text-center">Yükleniyor...</td></tr>
+                                <tr><td colspan="6" class="text-center">Yükleniyor...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -867,7 +937,9 @@
                 'support-settings': 'Destek Ayarları',
                 'product-categories': 'Ürün Kategorileri',
                 'product-brands': 'Ürün Markaları',
-                'priority-types': 'Öncelik Tipleri'
+                'priority-types': 'Öncelik Tipleri',
+                'services': 'Hizmetler',
+                'service-categories': 'Hizmet Kategorileri'
             };
             const pageTitle = document.getElementById('pageTitle');
             if (pageTitle) {
@@ -885,6 +957,10 @@
                 loadProductCategories();
             } else if (tabName === 'product-brands') {
                 loadProductBrands();
+            } else if (tabName === 'services') {
+                loadServices();
+            } else if (tabName === 'service-categories') {
+                loadServiceCategories();
             }
             
             // Update sidebar active states
@@ -1753,6 +1829,11 @@
                     arrow.style.transform = 'rotate(180deg)';
                 }
             }
+            
+            // Open "Tüm Destek Talepleri" tab by default on page load
+            setTimeout(() => {
+                switchTab('all-cases');
+            }, 100);
         });
 
         // Filter Panel Toggle
@@ -2001,6 +2082,7 @@
         // Override switchTab to load cases when all-cases tab is selected
         const originalSwitchTab = window.switchTab;
         window.switchTab = function(tabName) {
+            console.log('switchTab called with:', tabName);
             if (typeof originalSwitchTab === 'function') {
                 originalSwitchTab(tabName);
             } else {
@@ -2014,10 +2096,56 @@
                 }
             }
             
+            // Load data based on tab
             if (tabName === 'all-cases') {
                 loadAllCases();
+            } else if (tabName === 'product-categories') {
+                console.log('Loading product categories...');
+                if (typeof loadProductCategories === 'function') {
+                    loadProductCategories();
+                } else {
+                    console.error('loadProductCategories function not found!');
+                }
+            } else if (tabName === 'product-brands') {
+                console.log('Loading product brands...');
+                if (typeof loadProductBrands === 'function') {
+                    loadProductBrands();
+                } else {
+                    console.error('loadProductBrands function not found!');
+                }
             }
         };
+
+        // Ensure logout function is available
+        if (typeof window.logout !== 'function') {
+            window.logout = function() {
+                try {
+                    localStorage.removeItem('authToken');
+                    window.location.replace('/');
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    window.location.replace('/');
+                }
+            };
+        }
+
+        // Add event listener to logout button as backup
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoutBtn = document.querySelector('.logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    try {
+                        localStorage.removeItem('authToken');
+                        window.location.replace('/');
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        window.location.replace('/');
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

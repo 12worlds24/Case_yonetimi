@@ -4,8 +4,10 @@ Product Brand API endpoints
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from sqlalchemy.orm import joinedload
 from app.database import get_db
 from app.models.product_brand import ProductBrand
+from app.models.product_category import ProductCategory
 from app.schemas.product_brand import (
     ProductBrandCreate,
     ProductBrandUpdate,
@@ -30,6 +32,7 @@ async def get_product_brands(
     try:
         brands = (
             db.query(ProductBrand)
+            .options(joinedload(ProductBrand.category))
             .order_by(ProductBrand.sort_order, ProductBrand.name)
             .all()
         )
@@ -57,11 +60,27 @@ async def create_product_brand(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Marka adı zaten kullanılıyor",
             )
+        
+        # Validate category if provided
+        if brand_data.category_id:
+            category = db.query(ProductCategory).filter(ProductCategory.id == brand_data.category_id).first()
+            if not category:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Geçersiz kategori ID",
+                )
 
-        brand = ProductBrand(**brand_data.dict(exclude_unset=True))
+        brand_data_dict = brand_data.dict(exclude_unset=True)
+        # Remove category_id if it's None to avoid issues
+        if 'category_id' in brand_data_dict and brand_data_dict['category_id'] is None:
+            brand_data_dict.pop('category_id')
+        
+        brand = ProductBrand(**brand_data_dict)
         db.add(brand)
         db.commit()
         db.refresh(brand)
+        # Reload with category relationship
+        brand = db.query(ProductBrand).options(joinedload(ProductBrand.category)).filter(ProductBrand.id == brand.id).first()
         logger.info("Product brand created: %s by admin %s", brand.id, current_user.id)
         return brand
     except HTTPException:
@@ -100,13 +119,24 @@ async def update_product_brand(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Marka adı zaten kullanılıyor",
                 )
-
+        
+        # Validate category if provided
         update_data = brand_data.dict(exclude_unset=True)
+        if 'category_id' in update_data and update_data['category_id']:
+            category = db.query(ProductCategory).filter(ProductCategory.id == update_data['category_id']).first()
+            if not category:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Geçersiz kategori ID",
+                )
+
         for field, value in update_data.items():
             setattr(brand, field, value)
 
         db.commit()
         db.refresh(brand)
+        # Reload with category relationship
+        brand = db.query(ProductBrand).options(joinedload(ProductBrand.category)).filter(ProductBrand.id == brand_id).first()
         logger.info("Product brand updated: %s by admin %s", brand_id, current_user.id)
         return brand
     except HTTPException:
@@ -143,6 +173,7 @@ async def delete_product_brand(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete product brand",
         )
+
 
 
 

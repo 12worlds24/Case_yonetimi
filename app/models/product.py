@@ -13,10 +13,13 @@ class Product(BaseModel):
     name = Column(String(255), nullable=False, index=True)
     code = Column(String(100), nullable=True, unique=True, index=True)
     description = Column(Text, nullable=True)
-    category = Column(String(100), nullable=True)
+    category_id = Column(Integer, ForeignKey('product_categories.id'), nullable=True, index=True)
+    brand_id = Column(Integer, ForeignKey('product_brands.id'), nullable=True, index=True)
     attributes = Column(JSON, nullable=True)  # JSONB for flexible attributes
     
     # Relationships
+    category = relationship("ProductCategory", foreign_keys=[category_id])
+    brand = relationship("ProductBrand", foreign_keys=[brand_id])
     customers = relationship("CustomerProduct", back_populates="product", cascade="all, delete-orphan")
     cases = relationship("Case", back_populates="product")
     

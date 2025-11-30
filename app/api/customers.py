@@ -6,8 +6,10 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database import get_db
 from app.models.customer import Customer
+from app.models.customer_contact import CustomerContact
 from app.models.product import Product, CustomerProduct
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse
+from sqlalchemy.orm import joinedload
 from app.auth.dependencies import get_current_active_user, require_admin_or_manager, require_admin
 from app.models.user import User
 from app.utils.logger import get_logger
@@ -32,13 +34,35 @@ async def get_customers(
         
         if search:
             query = query.filter(
-                Customer.name.ilike(f"%{search}%") |
+                Customer.company_name.ilike(f"%{search}%") |
                 Customer.email.ilike(f"%{search}%") |
-                Customer.company_name.ilike(f"%{search}%")
+                Customer.tax_number.ilike(f"%{search}%")
             )
         
-        customers = query.offset(skip).limit(limit).all()
-        return customers
+        customers = query.options(
+            joinedload(Customer.products).joinedload(CustomerProduct.product),
+            joinedload(Customer.contacts)
+        ).offset(skip).limit(limit).all()
+        
+        # Format response
+        result = []
+        for customer in customers:
+            customer_dict = {
+                "id": customer.id,
+                "company_name": customer.company_name,
+                "address": customer.address,
+                "email": customer.email,
+                "tax_office": customer.tax_office,
+                "tax_number": customer.tax_number,
+                "notes": customer.notes,
+                "created_at": customer.created_at,
+                "updated_at": customer.updated_at,
+                "products": [{"id": cp.product.id, "name": cp.product.name} for cp in customer.products] if customer.products else [],
+                "contacts": [{"id": c.id, "full_name": c.full_name, "phone": c.phone, "email": c.email, "title": c.title} for c in customer.contacts] if customer.contacts else []
+            }
+            result.append(customer_dict)
+        
+        return result
     except Exception as e:
         logger.exception(f"Error getting customers: {e}")
         raise HTTPException(
@@ -55,13 +79,31 @@ async def get_customer(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get customer by ID"""
-    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    customer = db.query(Customer).options(
+        joinedload(Customer.products).joinedload(CustomerProduct.product),
+        joinedload(Customer.contacts)
+    ).filter(Customer.id == customer_id).first()
     if not customer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Customer not found"
         )
-    return customer
+    
+    # Format response
+    customer_dict = {
+        "id": customer.id,
+        "company_name": customer.company_name,
+        "address": customer.address,
+        "email": customer.email,
+        "tax_office": customer.tax_office,
+        "tax_number": customer.tax_number,
+        "notes": customer.notes,
+        "created_at": customer.created_at,
+        "updated_at": customer.updated_at,
+        "products": [{"id": cp.product.id, "name": cp.product.name} for cp in customer.products] if customer.products else [],
+        "contacts": [{"id": c.id, "full_name": c.full_name, "phone": c.phone, "email": c.email, "title": c.title} for c in customer.contacts] if customer.contacts else []
+    }
+    return customer_dict
 
 
 @router.post("/", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
@@ -83,7 +125,8 @@ async def create_customer(
                 )
         
         # Create customer
-        customer = Customer(**customer_data.dict(exclude={"product_ids"}))
+        customer_dict = customer_data.dict(exclude={"product_ids", "contacts"})
+        customer = Customer(**customer_dict)
         db.add(customer)
         db.flush()
         
@@ -98,11 +141,41 @@ async def create_customer(
                     )
                     db.add(customer_product)
         
+        # Add contacts if provided
+        if customer_data.contacts:
+            for contact_data in customer_data.contacts:
+                contact = CustomerContact(
+                    customer_id=customer.id,
+                    **contact_data.dict()
+                )
+                db.add(contact)
+        
         db.commit()
         db.refresh(customer)
         
+        # Load relationships for response
+        customer = db.query(Customer).options(
+            joinedload(Customer.products).joinedload(CustomerProduct.product),
+            joinedload(Customer.contacts)
+        ).filter(Customer.id == customer.id).first()
+        
         logger.info(f"Customer created: {customer.id} by user {current_user.id}")
-        return customer
+        
+        # Format response
+        customer_dict = {
+            "id": customer.id,
+            "company_name": customer.company_name,
+            "address": customer.address,
+            "email": customer.email,
+            "tax_office": customer.tax_office,
+            "tax_number": customer.tax_number,
+            "notes": customer.notes,
+            "created_at": customer.created_at,
+            "updated_at": customer.updated_at,
+            "products": [{"id": cp.product.id, "name": cp.product.name} for cp in customer.products] if customer.products else [],
+            "contacts": [{"id": c.id, "full_name": c.full_name, "phone": c.phone, "email": c.email, "title": c.title} for c in customer.contacts] if customer.contacts else []
+        }
+        return customer_dict
     
     except HTTPException:
         raise
@@ -132,15 +205,64 @@ async def update_customer(
         )
     
     try:
-        update_data = customer_data.dict(exclude_unset=True)
+        update_data = customer_data.dict(exclude_unset=True, exclude={"product_ids", "contacts"})
         for field, value in update_data.items():
             setattr(customer, field, value)
+        
+        # Update products if provided
+        if "product_ids" in customer_data.dict(exclude_unset=True):
+            # Remove existing products
+            db.query(CustomerProduct).filter(CustomerProduct.customer_id == customer_id).delete()
+            # Add new products
+            if customer_data.product_ids:
+                for product_id in customer_data.product_ids:
+                    product = db.query(Product).filter(Product.id == product_id).first()
+                    if product:
+                        customer_product = CustomerProduct(
+                            customer_id=customer.id,
+                            product_id=product_id
+                        )
+                        db.add(customer_product)
+        
+        # Update contacts if provided
+        if "contacts" in customer_data.dict(exclude_unset=True):
+            # Remove existing contacts
+            db.query(CustomerContact).filter(CustomerContact.customer_id == customer_id).delete()
+            # Add new contacts
+            if customer_data.contacts:
+                for contact_data in customer_data.contacts:
+                    contact = CustomerContact(
+                        customer_id=customer.id,
+                        **contact_data.dict()
+                    )
+                    db.add(contact)
         
         db.commit()
         db.refresh(customer)
         
+        # Load relationships for response
+        customer = db.query(Customer).options(
+            joinedload(Customer.products).joinedload(CustomerProduct.product),
+            joinedload(Customer.contacts)
+        ).filter(Customer.id == customer.id).first()
+        
         logger.info(f"Customer updated: {customer.id} by user {current_user.id}")
-        return customer
+        
+        # Format response
+        customer_dict = {
+            "id": customer.id,
+            "company_name": customer.company_name,
+            "address": customer.address,
+            "email": customer.email,
+            "tax_office": customer.tax_office,
+            "tax_number": customer.tax_number,
+            "notes": customer.notes,
+            "created_at": customer.created_at,
+            "updated_at": customer.updated_at,
+            "products": [{"id": cp.product.id, "name": cp.product.name} for cp in customer.products] if customer.products else [],
+            "contacts": [{"id": c.id, "full_name": c.full_name, "phone": c.phone, "email": c.email, "title": c.title} for c in customer.contacts] if customer.contacts else []
+        }
+        return customer_dict
     
     except Exception as e:
         db.rollback()

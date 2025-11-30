@@ -30,6 +30,8 @@ async function loadAllData() {
         loadUsers(),
         loadCustomers(),
         loadProducts(),
+        loadProductCategories(),
+        loadProductBrands(),
         loadDepartments(),
         loadRoles(),
         loadCases()
@@ -268,11 +270,14 @@ async function loadCustomers() {
         tbody.innerHTML = customers.map(customer => `
             <tr>
                 <td>${customer.id}</td>
-                <td><strong>${customer.name}</strong></td>
-                <td>${customer.company_name || 'N/A'}</td>
+                <td><strong>${customer.company_name || 'N/A'}</strong></td>
                 <td>${customer.email || 'N/A'}</td>
-                <td>${customer.phone || 'N/A'}</td>
+                <td>${customer.tax_number || 'N/A'}</td>
+                <td>${customer.tax_office || 'N/A'}</td>
                 <td>
+                    <button class="btn btn-sm btn-info" onclick="viewCustomerDetail(${customer.id})" title="Detayları Görüntüle">
+                        <i class="fas fa-eye"></i> Detaylar
+                    </button>
                     <button class="btn btn-sm btn-primary" onclick="editCustomer(${customer.id})">
                         <i class="fas fa-edit"></i> Düzenle
                     </button>
@@ -289,174 +294,287 @@ async function loadCustomers() {
     }
 }
 
-function showAddCustomerModal() {
-    const modal = createModal('addCustomerModal', 'Müşteri Ekle', `
-        <form id="addCustomerForm" class="modal-form">
-            <div class="form-grid">
-                <div class="form-group with-icon">
-                    <label class="form-label">Müşteri Adı *</label>
-                    <div class="input-icon">
-                        <i class="fas fa-id-card"></i>
-                        <input type="text" class="form-control" id="customerName" placeholder="Örn: Ahmet Yılmaz" required>
+async function showAddCustomerModal() {
+    // Load products first
+    await loadProducts();
+    const productsResponse = await fetch(`${API_BASE}/products`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    const allProducts = productsResponse.ok ? await productsResponse.json() : [];
+    
+    let contactCounter = 0;
+    const contacts = [];
+    
+    function addContactRow() {
+        const contactId = `contact_${contactCounter++}`;
+        contacts.push(contactId);
+        const contactHTML = `
+            <div class="contact-item mb-3 p-3 border rounded" id="contactItem_${contactId}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0">Yetkili Kişi ${contacts.length}</h6>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeContact('${contactId}')">
+                        <i class="fas fa-times"></i> Kaldır
+                    </button>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label small">İsim Soyisim *</label>
+                        <input type="text" class="form-control form-control-sm" id="contactName_${contactId}" required>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label small">Ünvan</label>
+                        <input type="text" class="form-control form-control-sm" id="contactTitle_${contactId}">
                     </div>
                 </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">Müşteri Türü *</label>
-                    <div class="input-icon">
-                        <i class="fas fa-briefcase"></i>
-                        <select class="form-select" id="customerType" required>
-                            <option value="Kurumsal">Kurumsal</option>
-                            <option value="Bireysel">Bireysel</option>
-                            <option value="Diğer">Diğer</option>
-                        </select>
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label small">Telefon</label>
+                        <input type="tel" class="form-control form-control-sm" id="contactPhone_${contactId}">
                     </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">Şirket Adı</label>
-                    <div class="input-icon">
-                        <i class="fas fa-building"></i>
-                        <input type="text" class="form-control" id="customerCompany" placeholder="Firma adı (opsiyonel)">
-                    </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">E-posta</label>
-                    <div class="input-icon">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" class="form-control" id="customerEmail" placeholder="ornek@firma.com">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Telefon</label>
-                    <div class="input-row">
-                        <select class="form-select" id="customerPhoneCode">
-                            <option value="+90" selected>TR +90</option>
-                        </select>
-                        <input type="tel" class="form-control" id="customerPhone" placeholder="5 _ _ _  _ _  _ _" maxlength="10">
-                    </div>
-                    <small class="form-note">Başında 0 olmadan 10 haneli giriniz</small>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">Şehir *</label>
-                    <div class="input-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <input type="text" class="form-control" id="customerCity" placeholder="Şehir seçiniz" required>
-                    </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">İlçe *</label>
-                    <div class="input-icon">
-                        <i class="fas fa-map"></i>
-                        <input type="text" class="form-control" id="customerDistrict" placeholder="Önce şehir seçiniz" required>
-                    </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">Adres *</label>
-                    <div class="input-icon">
-                        <i class="fas fa-location-arrow"></i>
-                        <input type="text" class="form-control" id="customerAddress" placeholder="Örn: Atatürk Cad. No:15 D:3" required>
-                    </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">Vergi No</label>
-                    <div class="input-icon">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                        <input type="text" class="form-control" id="customerTaxNumber" placeholder="Vergi numarası giriniz">
-                    </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">Vergi Dairesi</label>
-                    <div class="input-icon">
-                        <i class="fas fa-university"></i>
-                        <input type="text" class="form-control" id="customerTaxOffice" placeholder="Vergi dairesi adı">
-                    </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">Kontak Kişi Adı</label>
-                    <div class="input-icon">
-                        <i class="fas fa-user"></i>
-                        <input type="text" class="form-control" id="contactName" placeholder="Örn: Mehmet Demir">
-                    </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">İlgili Kişi E-posta</label>
-                    <div class="input-icon">
-                        <i class="fas fa-at"></i>
-                        <input type="email" class="form-control" id="contactEmail" placeholder="ilgili@firma.com">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Kontak Kişi Telefon</label>
-                    <div class="input-row">
-                        <select class="form-select" id="contactPhoneCode">
-                            <option value="+90" selected>TR +90</option>
-                        </select>
-                        <input type="tel" class="form-control" id="contactPhone" placeholder="5 _ _ _  _ _  _ _" maxlength="10">
-                    </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">Faaliyet Alanı</label>
-                    <div class="input-icon">
-                        <i class="fas fa-layer-group"></i>
-                        <select class="form-select" id="customerActivity">
-                            <option value="">Seçiniz</option>
-                            <option>Teknoloji</option>
-                            <option>Finans</option>
-                            <option>Sağlık</option>
-                            <option>Üretim</option>
-                            <option>Diğer</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group with-icon">
-                    <label class="form-label">Müşteri Kaynağı</label>
-                    <div class="input-icon">
-                        <i class="fas fa-share-alt"></i>
-                        <select class="form-select" id="customerSource">
-                            <option value="">Seçiniz</option>
-                            <option>Referans</option>
-                            <option>Web</option>
-                            <option>Etkinlik</option>
-                            <option>Diğer</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group with-icon" style="grid-column: 1 / -1;">
-                    <label class="form-label">Notlar</label>
-                    <div class="input-icon">
-                        <i class="fas fa-sticky-note"></i>
-                        <textarea class="form-control" id="customerNotes" placeholder="Müşteri hakkında notlar..." rows="3"></textarea>
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label small">Email</label>
+                        <input type="email" class="form-control form-control-sm" id="contactEmail_${contactId}">
                     </div>
                 </div>
             </div>
-        </form>
-    `, async () => {
-        const customerData = {
-            name: getInputValue('customerName'),
-            company_name: getInputValue('customerCompany'),
-            email: getInputValue('customerEmail'),
-            phone: combinePhone('customerPhoneCode', 'customerPhone'),
-            address: getInputValue('customerAddress'),
-            contact_person: getInputValue('contactName'),
-            contact_email: getInputValue('contactEmail'),
-            contact_phone: combinePhone('contactPhoneCode', 'contactPhone')
-        };
-
-        const customFields = {
-            customer_type: getInputValue('customerType'),
-            city: getInputValue('customerCity'),
-            district: getInputValue('customerDistrict'),
-            tax_number: getInputValue('customerTaxNumber'),
-            tax_office: getInputValue('customerTaxOffice'),
-            activity_area: getInputValue('customerActivity'),
-            source: getInputValue('customerSource'),
-            notes: getInputValue('customerNotes')
-        };
-        Object.keys(customFields).forEach(key => {
-            if (!customFields[key]) delete customFields[key];
-        });
-        customerData.custom_fields = Object.keys(customFields).length ? customFields : null;
+        `;
+        document.getElementById('contactsContainer').insertAdjacentHTML('beforeend', contactHTML);
+    }
+    
+    window.removeContact = function(contactId) {
+        const item = document.getElementById(`contactItem_${contactId}`);
+        if (item) {
+            item.remove();
+            const index = contacts.indexOf(contactId);
+            if (index > -1) contacts.splice(index, 1);
+        }
+    };
+    
+    const modalHTML = `
+        <div class="modal fade" id="addCustomerModal" tabindex="-1">
+            <div class="modal-dialog modal-fullscreen-lg-down" style="max-width: 95vw;">
+                <div class="modal-content" style="max-height: 95vh;">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Müşteri Ekle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="overflow-y: auto; max-height: calc(95vh - 120px);">
+                        <form id="addCustomerForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Firma İsmi <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-sm" id="customerCompanyName" required>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Email</label>
+                                    <input type="email" class="form-control form-control-sm" id="customerEmail">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12 mb-2">
+                                    <label class="form-label small">Adres</label>
+                                    <textarea class="form-control form-control-sm" id="customerAddress" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Vergi Dairesi</label>
+                                    <input type="text" class="form-control form-control-sm" id="customerTaxOffice">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label small">Vergi No</label>
+                                    <input type="text" class="form-control form-control-sm" id="customerTaxNumber">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label small mb-0">Yetkili Kişiler</label>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="addContactRow()">
+                                            <i class="fas fa-plus"></i> Kişi Ekle
+                                        </button>
+                                    </div>
+                                    <div id="contactsContainer"></div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label class="form-label small">Firma Ürünleri</label>
+                                    <div class="product-selection-container">
+                                        <div class="selected-product-tags" id="selectedProductTags"></div>
+                                        <div class="product-search-wrapper">
+                                            <input type="text" class="form-control form-control-sm" id="productSearchInput" placeholder="Ürün ara ve seç..." autocomplete="off">
+                                            <div class="product-dropdown" id="productDropdown" style="display: none;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label class="form-label small">Notlar</label>
+                                    <textarea class="form-control form-control-sm" id="customerNotes" rows="3" placeholder="Firma ile ilgili bilgiler..."></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="saveCustomer()">Kaydet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('addCustomerModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Initialize modal
+    const modalElement = new bootstrap.Modal(document.getElementById('addCustomerModal'));
+    
+    // Make addContactRow available globally
+    window.addContactRow = addContactRow;
+    
+    // Initialize with one contact
+    addContactRow();
+    
+    // Initialize product selection
+    let selectedProductIds = [];
+    const activeProducts = allProducts.filter(p => p.is_active !== 0);
+    
+    function renderSelectedProductTags() {
+        const container = document.getElementById('selectedProductTags');
+        if (!container) return;
+        
+        if (selectedProductIds.length === 0) {
+            container.innerHTML = '<div class="text-muted small">Henüz ürün seçilmedi</div>';
+            return;
+        }
+        
+        container.innerHTML = selectedProductIds.map(productId => {
+            const product = activeProducts.find(p => p.id === productId);
+            if (!product) return '';
+            return `
+                <span class="product-tag">
+                    <span class="tag-name">${product.name}</span>
+                    <span class="tag-remove" onclick="removeProductTag(${productId})">×</span>
+                </span>
+            `;
+        }).join('');
+    }
+    
+    function filterProducts(searchTerm) {
+        const term = searchTerm.toLowerCase();
+        return activeProducts.filter(p => 
+            !selectedProductIds.includes(p.id) && 
+            p.name.toLowerCase().includes(term)
+        );
+    }
+    
+    function showProductDropdown() {
+        const dropdown = document.getElementById('productDropdown');
+        const input = document.getElementById('productSearchInput');
+        if (!dropdown || !input) return;
+        
+        const searchTerm = input.value.trim();
+        const filtered = filterProducts(searchTerm);
+        
+        if (filtered.length === 0) {
+            dropdown.innerHTML = '<div class="dropdown-item text-muted">Ürün bulunamadı</div>';
+        } else {
+            dropdown.innerHTML = filtered.slice(0, 10).map(product => `
+                <div class="dropdown-item product-option" onclick="selectProduct(${product.id})">
+                    ${product.name}
+                </div>
+            `).join('');
+        }
+        
+        dropdown.style.display = 'block';
+    }
+    
+    function hideProductDropdown() {
+        const dropdown = document.getElementById('productDropdown');
+        if (dropdown) {
+            setTimeout(() => dropdown.style.display = 'none', 200);
+        }
+    }
+    
+    window.selectProduct = function(productId) {
+        if (!selectedProductIds.includes(productId)) {
+            selectedProductIds.push(productId);
+            renderSelectedProductTags();
+            const input = document.getElementById('productSearchInput');
+            if (input) input.value = '';
+            hideProductDropdown();
+        }
+    };
+    
+    window.removeProductTag = function(productId) {
+        selectedProductIds = selectedProductIds.filter(id => id !== productId);
+        renderSelectedProductTags();
+    };
+    
+    // Setup product search input
+    setTimeout(() => {
+        const productInput = document.getElementById('productSearchInput');
+        const productDropdown = document.getElementById('productDropdown');
+        
+        if (productInput) {
+            productInput.addEventListener('input', showProductDropdown);
+            productInput.addEventListener('focus', showProductDropdown);
+            productInput.addEventListener('blur', hideProductDropdown);
+        }
+        
+        if (productDropdown) {
+            productDropdown.addEventListener('mousedown', (e) => e.preventDefault());
+        }
+        
+        renderSelectedProductTags();
+    }, 100);
+    
+    // Save function
+    window.saveCustomer = async function() {
+        const form = document.getElementById('addCustomerForm');
+        if (!form || !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
         
         try {
+            // Collect contacts
+            const contactList = [];
+            contacts.forEach(contactId => {
+                const name = document.getElementById(`contactName_${contactId}`)?.value;
+                if (name) {
+                    contactList.push({
+                        full_name: name,
+                        phone: document.getElementById(`contactPhone_${contactId}`)?.value || null,
+                        email: document.getElementById(`contactEmail_${contactId}`)?.value || null,
+                        title: document.getElementById(`contactTitle_${contactId}`)?.value || null
+                    });
+                }
+            });
+            
+            // Collect selected products from tags
+            const selectedProducts = selectedProductIds.length > 0 ? selectedProductIds : null;
+            
+            const customerData = {
+                company_name: document.getElementById('customerCompanyName').value,
+                address: document.getElementById('customerAddress').value || null,
+                email: document.getElementById('customerEmail').value || null,
+                tax_office: document.getElementById('customerTaxOffice').value || null,
+                tax_number: document.getElementById('customerTaxNumber').value || null,
+                notes: document.getElementById('customerNotes').value || null,
+                product_ids: selectedProducts.length > 0 ? selectedProducts : null,
+                contacts: contactList.length > 0 ? contactList : null
+            };
+            
             const response = await fetch(`${API_BASE}/customers`, {
                 method: 'POST',
                 headers: {
@@ -477,10 +595,586 @@ function showAddCustomerModal() {
         } catch (error) {
             notifyError(error.message);
         }
+    };
+    
+    modalElement.show();
+}
+
+// ========== SERVICES ==========
+async function loadServices() {
+    const tbody = document.getElementById('servicesTable');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Hizmetler bölümü yakında eklenecek...</td></tr>';
+    }
+}
+
+function showAddServiceModal() {
+    notifyInfo('Hizmetler bölümü yakında eklenecek...');
+}
+
+// ========== SERVICE CATEGORIES ==========
+async function loadServiceCategories() {
+    const tbody = document.getElementById('serviceCategoriesTable');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Hizmet Kategorileri bölümü yakında eklenecek...</td></tr>';
+    }
+}
+
+function showAddServiceCategoryModal() {
+    notifyInfo('Hizmet Kategorileri bölümü yakında eklenecek...');
+}
+
+// ========== PRODUCT CATEGORIES ==========
+async function loadProductCategories() {
+    console.log('loadProductCategories called');
+    try {
+        console.log('Fetching product categories from:', `${API_BASE}/product-categories`);
+        const response = await fetch(`${API_BASE}/product-categories`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        console.log('Response status:', response.status);
+        
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('authToken');
+            notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            setTimeout(() => window.location.replace('/'), 2000);
+            return;
+        }
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+            throw new Error(errorData.detail || `HTTP ${response.status}`);
+        }
+        
+        const categories = await response.json();
+        
+        const tbody = document.getElementById('productCategoriesTable');
+        if (!categories || !Array.isArray(categories)) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
+            return;
+        }
+        
+        if (categories.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Kategori bulunamadı</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = categories.map(cat => `
+            <tr>
+                <td>${cat.id}</td>
+                <td><strong>${cat.name}</strong></td>
+                <td>${cat.description || 'N/A'}</td>
+                <td><span class="badge badge-${cat.is_active === 1 ? 'success' : 'danger'}">${cat.is_active === 1 ? 'Aktif' : 'Pasif'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editProductCategory(${cat.id})">
+                        <i class="fas fa-edit"></i> Düzenle
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteProductCategory(${cat.id})">
+                        <i class="fas fa-trash"></i> Sil
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading product categories:', error);
+        const tbody = document.getElementById('productCategoriesTable');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Hata: ' + (error.message || 'Bilinmeyen hata') + '</td></tr>';
+        }
+    }
+}
+
+function showAddProductCategoryModal() {
+    console.log('showAddProductCategoryModal called');
+    const modal = createModal('addProductCategoryModal', 'Yeni Kategori Ekle', `
+        <form id="addProductCategoryForm">
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-tag"></i> Kategori Adı <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="productCategoryName" required placeholder="Kategori adını giriniz">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-align-left"></i> Kategori Açıklama
+                </label>
+                <textarea class="form-control" id="productCategoryDescription" rows="3" placeholder="Kategori açıklamasını giriniz (opsiyonel)"></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-sort-numeric-down"></i> Sıra
+                </label>
+                <input type="number" class="form-control" id="productCategorySortOrder" value="0" min="0" placeholder="Sıra numarası">
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="productCategoryIsActive" checked>
+                    <label class="form-check-label" for="productCategoryIsActive">
+                        Aktif
+                    </label>
+                </div>
+            </div>
+        </form>
+    `, async () => {
+        console.log('Category save handler called');
+        const categoryData = {
+            name: document.getElementById('productCategoryName').value.trim(),
+            description: document.getElementById('productCategoryDescription').value.trim() || null,
+            sort_order: parseInt(document.getElementById('productCategorySortOrder').value) || 0,
+            is_active: document.getElementById('productCategoryIsActive').checked ? 1 : 0
+        };
+        
+        if (!categoryData.name) {
+            notifyError('Kategori adı zorunludur!');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API_BASE}/product-categories`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(categoryData)
+            });
+            
+            if (response.ok) {
+                notifySuccess('Kategori başarıyla eklendi!');
+                bootstrap.Modal.getInstance(document.getElementById('addProductCategoryModal')).hide();
+                loadProductCategories();
+            } else {
+                const error = await response.json();
+                notifyError(error.detail || 'Kategori eklenirken hata oluştu');
+            }
+        } catch (error) {
+            notifyError('Bağlantı hatası: ' + error.message);
+        }
     });
     
-    const modalElement = new bootstrap.Modal(document.getElementById('addCustomerModal'));
+    const modalElement = new bootstrap.Modal(document.getElementById('addProductCategoryModal'));
     modalElement.show();
+}
+
+async function editProductCategory(id) {
+    try {
+        const response = await fetch(`${API_BASE}/product-categories`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (!response.ok) {
+            notifyError('Kategori bilgileri yüklenemedi');
+            return;
+        }
+        
+        const categories = await response.json();
+        const category = categories.find(c => c.id === id);
+        
+        if (!category) {
+            notifyError('Kategori bulunamadı');
+            return;
+        }
+        
+        const modal = createModal('editProductCategoryModal', 'Kategori Düzenle', `
+            <form id="editProductCategoryForm">
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-tag"></i> Kategori Adı <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="editProductCategoryName" value="${category.name}" required placeholder="Kategori adını giriniz">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-align-left"></i> Kategori Açıklama
+                    </label>
+                    <textarea class="form-control" id="editProductCategoryDescription" rows="3" placeholder="Kategori açıklamasını giriniz (opsiyonel)">${category.description || ''}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-sort-numeric-down"></i> Sıra
+                    </label>
+                    <input type="number" class="form-control" id="editProductCategorySortOrder" value="${category.sort_order || 0}" min="0" placeholder="Sıra numarası">
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="editProductCategoryIsActive" ${category.is_active === 1 ? 'checked' : ''}>
+                        <label class="form-check-label" for="editProductCategoryIsActive">
+                            Aktif
+                        </label>
+                    </div>
+                </div>
+            </form>
+        `, async () => {
+            const categoryData = {
+                name: document.getElementById('editProductCategoryName').value.trim(),
+                description: document.getElementById('editProductCategoryDescription').value.trim() || null,
+                sort_order: parseInt(document.getElementById('editProductCategorySortOrder').value) || 0,
+                is_active: document.getElementById('editProductCategoryIsActive').checked ? 1 : 0
+            };
+            
+            if (!categoryData.name) {
+                notifyError('Kategori adı zorunludur!');
+                return;
+            }
+            
+            try {
+                const updateResponse = await fetch(`${API_BASE}/product-categories/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(categoryData)
+                });
+                
+                if (updateResponse.ok) {
+                    notifySuccess('Kategori başarıyla güncellendi!');
+                    bootstrap.Modal.getInstance(document.getElementById('editProductCategoryModal')).hide();
+                    loadProductCategories();
+                } else {
+                    const error = await updateResponse.json();
+                    notifyError(error.detail || 'Kategori güncellenirken hata oluştu');
+                }
+            } catch (error) {
+                notifyError('Bağlantı hatası: ' + error.message);
+            }
+        });
+        
+        const modalElement = new bootstrap.Modal(document.getElementById('editProductCategoryModal'));
+        modalElement.show();
+    } catch (error) {
+        notifyError('Hata: ' + error.message);
+    }
+}
+
+async function deleteProductCategory(id) {
+    if (!confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/product-categories/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok || response.status === 204) {
+            notifySuccess('Kategori başarıyla silindi!');
+            loadProductCategories();
+        } else {
+            const error = await response.json();
+            notifyError(error.detail || 'Kategori silinirken hata oluştu');
+        }
+    } catch (error) {
+        notifyError('Bağlantı hatası: ' + error.message);
+    }
+}
+
+// ========== PRODUCT BRANDS ==========
+async function loadProductBrands() {
+    console.log('loadProductBrands called');
+    try {
+        console.log('Fetching product brands from:', `${API_BASE}/product-brands`);
+        const response = await fetch(`${API_BASE}/product-brands`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('authToken');
+            notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            setTimeout(() => window.location.replace('/'), 2000);
+            return;
+        }
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+            throw new Error(errorData.detail || `HTTP ${response.status}`);
+        }
+        
+        const brands = await response.json();
+        
+        const tbody = document.getElementById('productBrandsTable');
+        if (!brands || !Array.isArray(brands)) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
+            return;
+        }
+        
+        if (brands.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Marka bulunamadı</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = brands.map(brand => `
+            <tr>
+                <td>${brand.id}</td>
+                <td><strong>${brand.name}</strong></td>
+                <td>${brand.category ? brand.category.name : 'Kategori yok'}</td>
+                <td>${brand.description || 'N/A'}</td>
+                <td><span class="badge badge-${brand.is_active === 1 ? 'success' : 'danger'}">${brand.is_active === 1 ? 'Aktif' : 'Pasif'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editProductBrand(${brand.id})">
+                        <i class="fas fa-edit"></i> Düzenle
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteProductBrand(${brand.id})">
+                        <i class="fas fa-trash"></i> Sil
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading product brands:', error);
+        const tbody = document.getElementById('productBrandsTable');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Hata: ' + (error.message || 'Bilinmeyen hata') + '</td></tr>';
+        }
+    }
+}
+
+async function showAddProductBrandModal() {
+    console.log('showAddProductBrandModal called');
+    // Load categories first
+    let categories = [];
+    try {
+        const catResponse = await fetch(`${API_BASE}/product-categories`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (catResponse.ok) {
+            categories = await catResponse.json();
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+    
+    const categoryOptions = categories
+        .filter(cat => cat.is_active === 1)
+        .map(cat => `<option value="${cat.id}">${cat.name}</option>`)
+        .join('');
+    
+    const modal = createModal('addProductBrandModal', 'Yeni Marka Ekle', `
+        <form id="addProductBrandForm">
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-tag"></i> Marka Adı <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="productBrandName" required placeholder="Marka adını giriniz">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-folder"></i> Kategori
+                </label>
+                <select class="form-control" id="productBrandCategory">
+                    <option value="">Kategori seçiniz</option>
+                    ${categoryOptions}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-align-left"></i> Marka Açıklaması
+                </label>
+                <textarea class="form-control" id="productBrandDescription" rows="3" placeholder="Marka açıklamasını giriniz (opsiyonel)"></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-sort-numeric-down"></i> Sıra
+                </label>
+                <input type="number" class="form-control" id="productBrandSortOrder" value="0" min="0" placeholder="Sıra numarası">
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="productBrandIsActive" checked>
+                    <label class="form-check-label" for="productBrandIsActive">
+                        Aktif
+                    </label>
+                </div>
+            </div>
+        </form>
+    `, async () => {
+        console.log('Brand save handler called');
+        const categorySelect = document.getElementById('productBrandCategory');
+        const brandData = {
+            name: document.getElementById('productBrandName').value.trim(),
+            category_id: categorySelect.value ? parseInt(categorySelect.value) : null,
+            description: document.getElementById('productBrandDescription').value.trim() || null,
+            sort_order: parseInt(document.getElementById('productBrandSortOrder').value) || 0,
+            is_active: document.getElementById('productBrandIsActive').checked ? 1 : 0
+        };
+        
+        if (!brandData.name) {
+            notifyError('Marka adı zorunludur!');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API_BASE}/product-brands`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(brandData)
+            });
+            
+            if (response.ok) {
+                notifySuccess('Marka başarıyla eklendi!');
+                bootstrap.Modal.getInstance(document.getElementById('addProductBrandModal')).hide();
+                loadProductBrands();
+            } else {
+                const error = await response.json();
+                notifyError(error.detail || 'Marka eklenirken hata oluştu');
+            }
+        } catch (error) {
+            notifyError('Bağlantı hatası: ' + error.message);
+        }
+    });
+    
+    const modalElement = new bootstrap.Modal(document.getElementById('addProductBrandModal'));
+    modalElement.show();
+}
+
+async function editProductBrand(id) {
+    try {
+        // Load brands and categories
+        const [brandsResponse, categoriesResponse] = await Promise.all([
+            fetch(`${API_BASE}/product-brands`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }),
+            fetch(`${API_BASE}/product-categories`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            })
+        ]);
+        
+        if (!brandsResponse.ok) {
+            notifyError('Marka bilgileri yüklenemedi');
+            return;
+        }
+        
+        const brands = await brandsResponse.json();
+        const brand = brands.find(b => b.id === id);
+        
+        if (!brand) {
+            notifyError('Marka bulunamadı');
+            return;
+        }
+        
+        // Load categories for dropdown
+        let categories = [];
+        if (categoriesResponse.ok) {
+            categories = await categoriesResponse.json();
+        }
+        
+        const categoryOptions = categories
+            .filter(cat => cat.is_active === 1)
+            .map(cat => `<option value="${cat.id}" ${brand.category_id === cat.id ? 'selected' : ''}>${cat.name}</option>`)
+            .join('');
+        
+        const modal = createModal('editProductBrandModal', 'Marka Düzenle', `
+            <form id="editProductBrandForm">
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-tag"></i> Marka Adı <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="editProductBrandName" value="${brand.name}" required placeholder="Marka adını giriniz">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-folder"></i> Kategori
+                    </label>
+                    <select class="form-control" id="editProductBrandCategory">
+                        <option value="">Kategori seçiniz</option>
+                        ${categoryOptions}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-align-left"></i> Marka Açıklaması
+                    </label>
+                    <textarea class="form-control" id="editProductBrandDescription" rows="3" placeholder="Marka açıklamasını giriniz (opsiyonel)">${brand.description || ''}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-sort-numeric-down"></i> Sıra
+                    </label>
+                    <input type="number" class="form-control" id="editProductBrandSortOrder" value="${brand.sort_order || 0}" min="0" placeholder="Sıra numarası">
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="editProductBrandIsActive" ${brand.is_active === 1 ? 'checked' : ''}>
+                        <label class="form-check-label" for="editProductBrandIsActive">
+                            Aktif
+                        </label>
+                    </div>
+                </div>
+            </form>
+        `, async () => {
+            const categorySelect = document.getElementById('editProductBrandCategory');
+            const brandData = {
+                name: document.getElementById('editProductBrandName').value.trim(),
+                category_id: categorySelect.value ? parseInt(categorySelect.value) : null,
+                description: document.getElementById('editProductBrandDescription').value.trim() || null,
+                sort_order: parseInt(document.getElementById('editProductBrandSortOrder').value) || 0,
+                is_active: document.getElementById('editProductBrandIsActive').checked ? 1 : 0
+            };
+            
+            if (!brandData.name) {
+                notifyError('Marka adı zorunludur!');
+                return;
+            }
+            
+            try {
+                const updateResponse = await fetch(`${API_BASE}/product-brands/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(brandData)
+                });
+                
+                if (updateResponse.ok) {
+                    notifySuccess('Marka başarıyla güncellendi!');
+                    bootstrap.Modal.getInstance(document.getElementById('editProductBrandModal')).hide();
+                    loadProductBrands();
+                } else {
+                    const error = await updateResponse.json();
+                    notifyError(error.detail || 'Marka güncellenirken hata oluştu');
+                }
+            } catch (error) {
+                notifyError('Bağlantı hatası: ' + error.message);
+            }
+        });
+        
+        const modalElement = new bootstrap.Modal(document.getElementById('editProductBrandModal'));
+        modalElement.show();
+    } catch (error) {
+        notifyError('Hata: ' + error.message);
+    }
+}
+
+async function deleteProductBrand(id) {
+    if (!confirm('Bu markayı silmek istediğinize emin misiniz?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/product-brands/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok || response.status === 204) {
+            notifySuccess('Marka başarıyla silindi!');
+            loadProductBrands();
+        } else {
+            const error = await response.json();
+            notifyError(error.detail || 'Marka silinirken hata oluştu');
+        }
+    } catch (error) {
+        notifyError('Bağlantı hatası: ' + error.message);
+    }
 }
 
 // ========== PRODUCTS ==========
@@ -506,12 +1200,12 @@ async function loadProducts() {
         
         const tbody = document.getElementById('productsTable');
         if (!products || !Array.isArray(products)) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
             return;
         }
         
         if (products.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Ürün bulunamadı</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Ürün bulunamadı</td></tr>';
             return;
         }
         
@@ -520,7 +1214,8 @@ async function loadProducts() {
                 <td>${product.id}</td>
                 <td><strong>${product.name}</strong></td>
                 <td><span class="badge badge-info">${product.code || 'N/A'}</span></td>
-                <td>${product.category || 'N/A'}</td>
+                <td>${product.category ? product.category.name : 'N/A'}</td>
+                <td>${product.brand ? product.brand.name : 'N/A'}</td>
                 <td>
                     <button class="btn btn-sm btn-primary" onclick="editProduct(${product.id})">
                         <i class="fas fa-edit"></i> Düzenle
@@ -538,33 +1233,105 @@ async function loadProducts() {
     }
 }
 
-function showAddProductModal() {
+async function showAddProductModal() {
+    // Load categories and brands first
+    let categories = [];
+    let brands = [];
+    try {
+        const [catResponse, brandResponse] = await Promise.all([
+            fetch(`${API_BASE}/product-categories`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }),
+            fetch(`${API_BASE}/product-brands`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            })
+        ]);
+        
+        if (catResponse.ok) {
+            categories = await catResponse.json();
+        }
+        if (brandResponse.ok) {
+            brands = await brandResponse.json();
+        }
+    } catch (error) {
+        console.error('Error loading categories/brands:', error);
+    }
+    
+    const categoryOptions = categories
+        .filter(cat => cat.is_active === 1)
+        .map(cat => `<option value="${cat.id}">${cat.name}</option>`)
+        .join('');
+    
+    const brandOptions = brands
+        .filter(brand => brand.is_active === 1)
+        .map(brand => `<option value="${brand.id}">${brand.name}</option>`)
+        .join('');
+    
     const modal = createModal('addProductModal', 'Yeni Ürün Ekle', `
         <form id="addProductForm">
             <div class="mb-3">
-                <label class="form-label">Ürün Adı *</label>
-                <input type="text" class="form-control" id="productName" required>
+                <label class="form-label">
+                    <i class="fas fa-tag"></i> Ürün Adı <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="productName" required placeholder="Ürün adını giriniz">
             </div>
             <div class="mb-3">
-                <label class="form-label">Ürün Kodu</label>
-                <input type="text" class="form-control" id="productCode">
+                <label class="form-label">
+                    <i class="fas fa-barcode"></i> Ürün Kodu
+                </label>
+                <input type="text" class="form-control" id="productCode" placeholder="Ürün kodunu giriniz (opsiyonel)">
             </div>
             <div class="mb-3">
-                <label class="form-label">Kategori</label>
-                <input type="text" class="form-control" id="productCategory">
+                <label class="form-label">
+                    <i class="fas fa-folder"></i> Ürün Kategorisi <span class="text-danger">*</span>
+                </label>
+                <select class="form-control" id="productCategory" required>
+                    <option value="">Kategori seçiniz</option>
+                    ${categoryOptions}
+                </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">Açıklama</label>
-                <textarea class="form-control" id="productDescription"></textarea>
+                <label class="form-label">
+                    <i class="fas fa-star"></i> Ürün Markası <span class="text-danger">*</span>
+                </label>
+                <select class="form-control" id="productBrand" required>
+                    <option value="">Marka seçiniz</option>
+                    ${brandOptions}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-align-left"></i> Ürün Açıklaması
+                </label>
+                <textarea class="form-control" id="productDescription" rows="3" placeholder="Ürün açıklamasını giriniz"></textarea>
             </div>
         </form>
     `, async () => {
+        const categorySelect = document.getElementById('productCategory');
+        const brandSelect = document.getElementById('productBrand');
+        
         const productData = {
-            name: document.getElementById('productName').value,
-            code: document.getElementById('productCode').value || null,
-            category: document.getElementById('productCategory').value || null,
-            description: document.getElementById('productDescription').value || null
+            name: document.getElementById('productName').value.trim(),
+            code: document.getElementById('productCode').value.trim() || null,
+            category_id: categorySelect.value ? parseInt(categorySelect.value) : null,
+            brand_id: brandSelect.value ? parseInt(brandSelect.value) : null,
+            description: document.getElementById('productDescription').value.trim() || null
         };
+        
+        if (!productData.name) {
+            notifyError('Ürün adı zorunludur!');
+            return;
+        }
+        
+        if (!productData.category_id) {
+            notifyError('Ürün kategorisi seçilmelidir!');
+            return;
+        }
+        
+        if (!productData.brand_id) {
+            notifyError('Ürün markası seçilmelidir!');
+            return;
+        }
         
         try {
             const response = await fetch(`${API_BASE}/products`, {
@@ -582,10 +1349,10 @@ function showAddProductModal() {
                 loadProducts();
             } else {
                 const error = await response.json();
-                notifyError(error.detail || 'Bilinmeyen hata');
+                notifyError(error.detail || 'Ürün eklenirken hata oluştu');
             }
         } catch (error) {
-            notifyError(error.message);
+            notifyError('Bağlantı hatası: ' + error.message);
         }
     });
     
@@ -883,10 +1650,17 @@ function getStatusText(status) {
 // ========== HELPER FUNCTIONS ==========
 function createModal(id, title, body, onSave) {
     const modalsContainer = document.getElementById('modalsContainer');
+    if (!modalsContainer) {
+        console.error('modalsContainer not found!');
+        return null;
+    }
     
     // Remove existing modal if exists
     const existing = document.getElementById(id);
     if (existing) existing.remove();
+    
+    // Generate unique function name
+    const saveFunctionName = `save${id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, '')}`;
     
     const modalHTML = `
         <div class="modal fade custom-modal" id="${id}" tabindex="-1">
@@ -903,7 +1677,7 @@ function createModal(id, title, body, onSave) {
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             <i class="fas fa-times"></i> İptal
                         </button>
-                        <button type="button" class="btn btn-primary" onclick="save${id.charAt(0).toUpperCase() + id.slice(1)}()">
+                        <button type="button" class="btn btn-primary" id="${id}-save-btn">
                             <i class="fas fa-save"></i> Kaydet
                         </button>
                     </div>
@@ -914,8 +1688,47 @@ function createModal(id, title, body, onSave) {
     
     modalsContainer.insertAdjacentHTML('beforeend', modalHTML);
     
-    // Store save function
-    window[`save${id.charAt(0).toUpperCase() + id.slice(1)}`] = onSave;
+    // Wait for DOM to update, then attach event listener
+    setTimeout(() => {
+        const modalElement = document.getElementById(id);
+        if (!modalElement) {
+            console.error('Modal element not found:', id);
+            return;
+        }
+        
+        // Prevent form submission
+        const form = modalElement.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            });
+        }
+        
+        const saveBtn = document.getElementById(`${id}-save-btn`);
+        if (saveBtn && onSave) {
+            // Remove any existing listeners by cloning
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            
+            // Attach event listener to save button
+            newSaveBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Save button clicked for modal:', id);
+                try {
+                    await onSave();
+                } catch (error) {
+                    console.error('Error in modal save handler:', error);
+                    notifyError('Kaydetme sırasında hata oluştu: ' + error.message);
+                }
+                return false;
+            });
+        } else {
+            console.error('Save button not found or onSave not provided:', id, saveBtn, onSave);
+        }
+    }, 50);
     
     return document.getElementById(id);
 }
@@ -988,10 +1801,19 @@ function combinePhone(codeId, numberId) {
     return `${code} ${number}`;
 }
 
-function logout() {
-    localStorage.removeItem('authToken');
-    window.location.replace('/');
-}
+// Logout function - make sure it's globally accessible
+window.logout = function() {
+    try {
+        localStorage.removeItem('authToken');
+        authToken = null;
+        currentUser = null;
+        window.location.replace('/');
+    } catch (error) {
+        console.error('Logout error:', error);
+        // Force redirect even if there's an error
+        window.location.replace('/');
+    }
+};
 
 // Placeholder functions for edit/delete
 async function editUser(id) {
@@ -1144,6 +1966,13 @@ async function deleteUser(id) {
 }
 async function editCustomer(id) {
     try {
+        // Load products first
+        await loadProducts();
+        const productsResponse = await fetch(`${API_BASE}/products`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const allProducts = productsResponse.ok ? await productsResponse.json() : [];
+        
         const response = await fetch(`${API_BASE}/customers/${id}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -1152,49 +1981,288 @@ async function editCustomer(id) {
         
         const customer = await response.json();
         
-        const modal = createModal('editCustomerModal', 'Müşteri Düzenle', `
-            <form id="editCustomerForm" class="modal-form">
-                <div class="form-grid">
-                    <div class="form-group with-icon">
-                        <label class="form-label">Müşteri Adı *</label>
-                        <div class="input-icon">
-                            <i class="fas fa-id-card"></i>
-                            <input type="text" class="form-control" id="editCustomerName" value="${customer.name || ''}" required>
+        let contactCounter = 0;
+        const contacts = [];
+        
+        function addContactRow(contactData = null) {
+            const contactId = `contact_${contactCounter++}`;
+            contacts.push(contactId);
+            const contactHTML = `
+                <div class="contact-item mb-3 p-3 border rounded" id="contactItem_${contactId}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Yetkili Kişi ${contacts.length}</h6>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeEditContact('${contactId}')">
+                            <i class="fas fa-times"></i> Kaldır
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label small">İsim Soyisim *</label>
+                            <input type="text" class="form-control form-control-sm" id="editContactName_${contactId}" value="${(contactData?.full_name || '').replace(/"/g, '&quot;')}" required>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label small">Ünvan</label>
+                            <input type="text" class="form-control form-control-sm" id="editContactTitle_${contactId}" value="${(contactData?.title || '').replace(/"/g, '&quot;')}">
                         </div>
                     </div>
-                    <div class="form-group with-icon">
-                        <label class="form-label">E-posta</label>
-                        <div class="input-icon">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" class="form-control" id="editCustomerEmail" value="${customer.email || ''}">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label small">Telefon</label>
+                            <input type="tel" class="form-control form-control-sm" id="editContactPhone_${contactId}" value="${(contactData?.phone || '').replace(/"/g, '&quot;')}">
                         </div>
-                    </div>
-                    <div class="form-group with-icon">
-                        <label class="form-label">Telefon</label>
-                        <div class="input-icon">
-                            <i class="fas fa-phone"></i>
-                            <input type="text" class="form-control" id="editCustomerPhone" value="${customer.phone || ''}">
-                        </div>
-                    </div>
-                    <div class="form-group with-icon" style="grid-column: 1 / -1;">
-                        <label class="form-label">Adres</label>
-                        <div class="input-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <textarea class="form-control" id="editCustomerAddress" rows="2">${customer.address || ''}</textarea>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label small">Email</label>
+                            <input type="email" class="form-control form-control-sm" id="editContactEmail_${contactId}" value="${(contactData?.email || '').replace(/"/g, '&quot;')}">
                         </div>
                     </div>
                 </div>
-            </form>
-        `, async () => {
-            const customerData = {
-                name: document.getElementById('editCustomerName').value,
-                email: document.getElementById('editCustomerEmail').value || null,
-                phone: document.getElementById('editCustomerPhone').value || null,
-                address: document.getElementById('editCustomerAddress').value || null
-            };
+            `;
+            document.getElementById('editContactsContainer').insertAdjacentHTML('beforeend', contactHTML);
+        }
+        
+        window.removeEditContact = function(contactId) {
+            const item = document.getElementById(`contactItem_${contactId}`);
+            if (item) {
+                item.remove();
+                const index = contacts.indexOf(contactId);
+                if (index > -1) contacts.splice(index, 1);
+            }
+        };
+        
+        const modalHTML = `
+            <div class="modal fade" id="editCustomerModal" tabindex="-1">
+                <div class="modal-dialog modal-fullscreen-lg-down" style="max-width: 95vw;">
+                    <div class="modal-content" style="max-height: 95vh;">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Müşteri Düzenle</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" style="overflow-y: auto; max-height: calc(95vh - 120px);">
+                            <form id="editCustomerForm">
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label small">Firma İsmi <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-sm" id="editCustomerCompanyName" value="${(customer.company_name || '').replace(/"/g, '&quot;')}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label small">Email</label>
+                                        <input type="email" class="form-control form-control-sm" id="editCustomerEmail" value="${(customer.email || '').replace(/"/g, '&quot;')}">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-12 mb-2">
+                                        <label class="form-label small">Adres</label>
+                                        <textarea class="form-control form-control-sm" id="editCustomerAddress" rows="2">${(customer.address || '').replace(/"/g, '&quot;')}</textarea>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label small">Vergi Dairesi</label>
+                                        <input type="text" class="form-control form-control-sm" id="editCustomerTaxOffice" value="${(customer.tax_office || '').replace(/"/g, '&quot;')}">
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label small">Vergi No</label>
+                                        <input type="text" class="form-control form-control-sm" id="editCustomerTaxNumber" value="${(customer.tax_number || '').replace(/"/g, '&quot;')}">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label small mb-0">Yetkili Kişiler</label>
+                                            <button type="button" class="btn btn-sm btn-primary" onclick="addEditContactRow()">
+                                                <i class="fas fa-plus"></i> Kişi Ekle
+                                            </button>
+                                        </div>
+                                        <div id="editContactsContainer"></div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label small">Firma Ürünleri</label>
+                                        <div class="product-selection-container">
+                                            <div class="selected-product-tags" id="editSelectedProductTags"></div>
+                                            <div class="product-search-wrapper">
+                                                <input type="text" class="form-control form-control-sm" id="editProductSearchInput" placeholder="Ürün ara ve seç..." autocomplete="off">
+                                                <div class="product-dropdown" id="editProductDropdown" style="display: none;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label small">Notlar</label>
+                                        <textarea class="form-control form-control-sm" id="editCustomerNotes" rows="3" placeholder="Firma ile ilgili bilgiler...">${(customer.notes || '').replace(/"/g, '&quot;')}</textarea>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="updateCustomer(${id})">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('editCustomerModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add modal to page
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Initialize modal
+        const modalElement = new bootstrap.Modal(document.getElementById('editCustomerModal'));
+        
+        // Make addEditContactRow available globally
+        window.addEditContactRow = function() {
+            addContactRow();
+        };
+        
+        // Load existing contacts
+        if (customer.contacts && customer.contacts.length > 0) {
+            customer.contacts.forEach(contact => {
+                addContactRow(contact);
+            });
+        } else {
+            addContactRow(); // Add one empty contact row
+        }
+        
+        // Initialize product selection for edit
+        let editSelectedProductIds = customer.products ? customer.products.map(p => p.id) : [];
+        const editActiveProducts = allProducts.filter(p => p.is_active !== 0);
+        
+        function renderEditSelectedProductTags() {
+            const container = document.getElementById('editSelectedProductTags');
+            if (!container) return;
+            
+            if (editSelectedProductIds.length === 0) {
+                container.innerHTML = '<div class="text-muted small">Henüz ürün seçilmedi</div>';
+                return;
+            }
+            
+            container.innerHTML = editSelectedProductIds.map(productId => {
+                const product = editActiveProducts.find(p => p.id === productId);
+                if (!product) return '';
+                return `
+                    <span class="product-tag">
+                        <span class="tag-name">${product.name}</span>
+                        <span class="tag-remove" onclick="removeEditProductTag(${productId})">×</span>
+                    </span>
+                `;
+            }).join('');
+        }
+        
+        function filterEditProducts(searchTerm) {
+            const term = searchTerm.toLowerCase();
+            return editActiveProducts.filter(p => 
+                !editSelectedProductIds.includes(p.id) && 
+                p.name.toLowerCase().includes(term)
+            );
+        }
+        
+        function showEditProductDropdown() {
+            const dropdown = document.getElementById('editProductDropdown');
+            const input = document.getElementById('editProductSearchInput');
+            if (!dropdown || !input) return;
+            
+            const searchTerm = input.value.trim();
+            const filtered = filterEditProducts(searchTerm);
+            
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="dropdown-item text-muted">Ürün bulunamadı</div>';
+            } else {
+                dropdown.innerHTML = filtered.slice(0, 10).map(product => `
+                    <div class="dropdown-item product-option" onclick="selectEditProduct(${product.id})">
+                        ${product.name}
+                    </div>
+                `).join('');
+            }
+            
+            dropdown.style.display = 'block';
+        }
+        
+        function hideEditProductDropdown() {
+            const dropdown = document.getElementById('editProductDropdown');
+            if (dropdown) {
+                setTimeout(() => dropdown.style.display = 'none', 200);
+            }
+        }
+        
+        window.selectEditProduct = function(productId) {
+            if (!editSelectedProductIds.includes(productId)) {
+                editSelectedProductIds.push(productId);
+                renderEditSelectedProductTags();
+                const input = document.getElementById('editProductSearchInput');
+                if (input) input.value = '';
+                hideEditProductDropdown();
+            }
+        };
+        
+        window.removeEditProductTag = function(productId) {
+            editSelectedProductIds = editSelectedProductIds.filter(id => id !== productId);
+            renderEditSelectedProductTags();
+        };
+        
+        // Setup edit product search input
+        setTimeout(() => {
+            const productInput = document.getElementById('editProductSearchInput');
+            const productDropdown = document.getElementById('editProductDropdown');
+            
+            if (productInput) {
+                productInput.addEventListener('input', showEditProductDropdown);
+                productInput.addEventListener('focus', showEditProductDropdown);
+                productInput.addEventListener('blur', hideEditProductDropdown);
+            }
+            
+            if (productDropdown) {
+                productDropdown.addEventListener('mousedown', (e) => e.preventDefault());
+            }
+            
+            renderEditSelectedProductTags();
+        }, 100);
+        
+        // Update function
+        window.updateCustomer = async function(customerId) {
+            const form = document.getElementById('editCustomerForm');
+            if (!form || !form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
             
             try {
-                const response = await fetch(`${API_BASE}/customers/${id}`, {
+                // Collect contacts
+                const contactList = [];
+                contacts.forEach(contactId => {
+                    const name = document.getElementById(`editContactName_${contactId}`)?.value;
+                    if (name) {
+                        contactList.push({
+                            full_name: name,
+                            phone: document.getElementById(`editContactPhone_${contactId}`)?.value || null,
+                            email: document.getElementById(`editContactEmail_${contactId}`)?.value || null,
+                            title: document.getElementById(`editContactTitle_${contactId}`)?.value || null
+                        });
+                    }
+                });
+                
+                // Collect selected products from tags
+                const selectedProducts = editSelectedProductIds.length > 0 ? editSelectedProductIds : null;
+                
+                const customerData = {
+                    company_name: document.getElementById('editCustomerCompanyName').value,
+                    address: document.getElementById('editCustomerAddress').value || null,
+                    email: document.getElementById('editCustomerEmail').value || null,
+                    tax_office: document.getElementById('editCustomerTaxOffice').value || null,
+                    tax_number: document.getElementById('editCustomerTaxNumber').value || null,
+                    notes: document.getElementById('editCustomerNotes').value || null,
+                    product_ids: selectedProducts.length > 0 ? selectedProducts : null,
+                    contacts: contactList.length > 0 ? contactList : null
+                };
+                
+                const response = await fetch(`${API_BASE}/customers/${customerId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1214,9 +2282,8 @@ async function editCustomer(id) {
             } catch (error) {
                 notifyError(error.message);
             }
-        });
+        };
         
-        const modalElement = new bootstrap.Modal(document.getElementById('editCustomerModal'));
         modalElement.show();
     } catch (error) {
         notifyError(error.message);
@@ -1230,56 +2297,358 @@ function deleteCustomer(id) {
         }).then(() => loadCustomers());
     }
 }
-async function editProduct(id) {
+
+// View customer detail with tabs
+async function viewCustomerDetail(id) {
     try {
-        const response = await fetch(`${API_BASE}/products/${id}`, {
+        const response = await fetch(`${API_BASE}/customers/${id}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         
-        if (!response.ok) throw new Error('Ürün verileri yüklenemedi');
+        if (!response.ok) {
+            notifyError('Müşteri bilgileri yüklenemedi');
+            return;
+        }
         
-        const product = await response.json();
+        const customer = await response.json();
         
-        const modal = createModal('editProductModal', 'Ürün Düzenle', `
-            <form id="editProductForm" class="modal-form">
-                <div class="form-grid">
-                    <div class="form-group with-icon">
-                        <label class="form-label">Ürün Adı *</label>
-                        <div class="input-icon">
-                            <i class="fas fa-box"></i>
-                            <input type="text" class="form-control" id="editProductName" value="${product.name || ''}" required>
+        // Load related data
+        const [casesResponse, productsResponse] = await Promise.all([
+            fetch(`${API_BASE}/cases?customer_id=${id}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }).catch(() => ({ ok: false })),
+            fetch(`${API_BASE}/products`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }).catch(() => ({ ok: false }))
+        ]);
+        
+        const cases = casesResponse.ok ? await casesResponse.json() : [];
+        const allProducts = productsResponse.ok ? await productsResponse.json() : [];
+        
+        const customerProducts = customer.products || [];
+        const productNames = customerProducts.map(cp => {
+            const product = allProducts.find(p => p.id === cp.id);
+            return product ? product.name : 'Bilinmeyen Ürün';
+        });
+        
+        const modalHTML = `
+            <div class="modal fade" id="customerDetailModal" tabindex="-1">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-building"></i> ${customer.company_name || 'Müşteri Detayları'}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
-                    </div>
-                    <div class="form-group with-icon">
-                        <label class="form-label">Ürün Kodu</label>
-                        <div class="input-icon">
-                            <i class="fas fa-barcode"></i>
-                            <input type="text" class="form-control" id="editProductCode" value="${product.code || ''}">
+                        <div class="modal-body p-0">
+                            <!-- Tabs Navigation -->
+                            <ul class="nav nav-tabs border-bottom" id="customerDetailTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                                        <i class="fas fa-info-circle"></i> Detaylar
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab">
+                                        <i class="fas fa-sticky-note"></i> Notlar
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">
+                                        <i class="fas fa-box"></i> Ürünler
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button" role="tab">
+                                        <i class="fas fa-file"></i> Dosyalar
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+                                        <i class="fas fa-history"></i> Geçmiş
+                                    </button>
+                                </li>
+                            </ul>
+                            
+                            <!-- Tab Content -->
+                            <div class="tab-content p-4" id="customerDetailTabContent">
+                                <!-- Detaylar Tab -->
+                                <div class="tab-pane fade show active" id="details" role="tabpanel">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-muted mb-3">Temel Bilgiler</h6>
+                                                    <div class="mb-3">
+                                                        <label class="text-muted small">Firma İsmi</label>
+                                                        <p class="mb-0 fw-bold">${customer.company_name || 'Belirtilmemiş'}</p>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="text-muted small">E-posta</label>
+                                                        <p class="mb-0">${customer.email || 'Belirtilmemiş'}</p>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="text-muted small">Adres</label>
+                                                        <p class="mb-0">${customer.address || 'Belirtilmemiş'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-muted mb-3">Vergi Bilgileri</h6>
+                                                    <div class="mb-3">
+                                                        <label class="text-muted small">Vergi Dairesi</label>
+                                                        <p class="mb-0">${customer.tax_office || 'Belirtilmemiş'}</p>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="text-muted small">Vergi No</label>
+                                                        <p class="mb-0">${customer.tax_number || 'Belirtilmemiş'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-muted mb-3">Yetkili Kişiler</h6>
+                                                    ${customer.contacts && customer.contacts.length > 0 ? `
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>İsim Soyisim</th>
+                                                                        <th>Ünvan</th>
+                                                                        <th>Telefon</th>
+                                                                        <th>E-posta</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    ${customer.contacts.map(contact => `
+                                                                        <tr>
+                                                                            <td>${contact.full_name || 'N/A'}</td>
+                                                                            <td>${contact.title || 'N/A'}</td>
+                                                                            <td>${contact.phone || 'N/A'}</td>
+                                                                            <td>${contact.email || 'N/A'}</td>
+                                                                        </tr>
+                                                                    `).join('')}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    ` : '<p class="text-muted mb-0">Yetkili kişi bulunmuyor</p>'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Notlar Tab -->
+                                <div class="tab-pane fade" id="notes" role="tabpanel">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-3">Müşteri Notları</h6>
+                                            <div class="border rounded p-3 bg-light" style="min-height: 200px;">
+                                                ${customer.notes ? `<p class="mb-0">${customer.notes.replace(/\n/g, '<br>')}</p>` : '<p class="text-muted mb-0">Henüz not eklenmemiş</p>'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Ürünler Tab -->
+                                <div class="tab-pane fade" id="products" role="tabpanel">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-3">Firma Ürünleri</h6>
+                                            ${productNames.length > 0 ? `
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    ${productNames.map(name => `
+                                                        <span class="badge bg-success fs-6">${name}</span>
+                                                    `).join('')}
+                                                </div>
+                                            ` : '<p class="text-muted mb-0">Henüz ürün atanmamış</p>'}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Dosyalar Tab -->
+                                <div class="tab-pane fade" id="files" role="tabpanel">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-3">Müşteri Dosyaları</h6>
+                                            <p class="text-muted mb-0">Dosya yönetimi yakında eklenecek...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Geçmiş Tab -->
+                                <div class="tab-pane fade" id="history" role="tabpanel">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-3">Destek Talepleri Geçmişi</h6>
+                                            ${cases.length > 0 ? `
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Ticket No</th>
+                                                                <th>Başlık</th>
+                                                                <th>Durum</th>
+                                                                <th>Öncelik</th>
+                                                                <th>Tarih</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            ${cases.map(c => `
+                                                                <tr>
+                                                                    <td>${c.ticket_number || c.id}</td>
+                                                                    <td>${c.title || 'N/A'}</td>
+                                                                    <td><span class="badge bg-secondary">${c.status?.name || 'N/A'}</span></td>
+                                                                    <td><span class="badge bg-warning">${c.priority_type?.name || 'N/A'}</span></td>
+                                                                    <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('tr-TR') : 'N/A'}</td>
+                                                                </tr>
+                                                            `).join('')}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            ` : '<p class="text-muted mb-0">Henüz destek talebi bulunmuyor</p>'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group with-icon">
-                        <label class="form-label">Kategori</label>
-                        <div class="input-icon">
-                            <i class="fas fa-tags"></i>
-                            <input type="text" class="form-control" id="editProductCategory" value="${product.category || ''}">
-                        </div>
-                    </div>
-                    <div class="form-group with-icon" style="grid-column: 1 / -1;">
-                        <label class="form-label">Açıklama</label>
-                        <div class="input-icon">
-                            <i class="fas fa-align-left"></i>
-                            <textarea class="form-control" id="editProductDescription" rows="3">${product.description || ''}</textarea>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                            <button type="button" class="btn btn-primary" onclick="editCustomer(${id}); bootstrap.Modal.getInstance(document.getElementById('customerDetailModal')).hide();">
+                                <i class="fas fa-edit"></i> Düzenle
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('customerDetailModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Add modal to page
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Initialize modal
+        const modalElement = new bootstrap.Modal(document.getElementById('customerDetailModal'));
+        modalElement.show();
+    } catch (error) {
+        console.error('Error loading customer detail:', error);
+        notifyError('Müşteri detayları yüklenirken hata oluştu: ' + error.message);
+    }
+}
+async function editProduct(id) {
+    try {
+        // Load product, categories and brands
+        const [productResponse, categoriesResponse, brandsResponse] = await Promise.all([
+            fetch(`${API_BASE}/products/${id}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }),
+            fetch(`${API_BASE}/product-categories`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }),
+            fetch(`${API_BASE}/product-brands`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            })
+        ]);
+        
+        if (!productResponse.ok) throw new Error('Ürün verileri yüklenemedi');
+        
+        const product = await productResponse.json();
+        let categories = [];
+        let brands = [];
+        
+        if (categoriesResponse.ok) {
+            categories = await categoriesResponse.json();
+        }
+        if (brandsResponse.ok) {
+            brands = await brandsResponse.json();
+        }
+        
+        const categoryOptions = categories
+            .filter(cat => cat.is_active === 1)
+            .map(cat => `<option value="${cat.id}" ${product.category_id === cat.id ? 'selected' : ''}>${cat.name}</option>`)
+            .join('');
+        
+        const brandOptions = brands
+            .filter(brand => brand.is_active === 1)
+            .map(brand => `<option value="${brand.id}" ${product.brand_id === brand.id ? 'selected' : ''}>${brand.name}</option>`)
+            .join('');
+        
+        const modal = createModal('editProductModal', 'Ürün Düzenle', `
+            <form id="editProductForm">
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-tag"></i> Ürün Adı <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control" id="editProductName" value="${product.name || ''}" required placeholder="Ürün adını giriniz">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-barcode"></i> Ürün Kodu
+                    </label>
+                    <input type="text" class="form-control" id="editProductCode" value="${product.code || ''}" placeholder="Ürün kodunu giriniz (opsiyonel)">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-folder"></i> Ürün Kategorisi <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-control" id="editProductCategory" required>
+                        <option value="">Kategori seçiniz</option>
+                        ${categoryOptions}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-star"></i> Ürün Markası <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-control" id="editProductBrand" required>
+                        <option value="">Marka seçiniz</option>
+                        ${brandOptions}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-align-left"></i> Ürün Açıklaması
+                    </label>
+                    <textarea class="form-control" id="editProductDescription" rows="3" placeholder="Ürün açıklamasını giriniz">${product.description || ''}</textarea>
+                </div>
             </form>
         `, async () => {
+            const categorySelect = document.getElementById('editProductCategory');
+            const brandSelect = document.getElementById('editProductBrand');
+            
             const productData = {
-                name: document.getElementById('editProductName').value,
-                code: document.getElementById('editProductCode').value || null,
-                category: document.getElementById('editProductCategory').value || null,
-                description: document.getElementById('editProductDescription').value || null
+                name: document.getElementById('editProductName').value.trim(),
+                code: document.getElementById('editProductCode').value.trim() || null,
+                category_id: categorySelect.value ? parseInt(categorySelect.value) : null,
+                brand_id: brandSelect.value ? parseInt(brandSelect.value) : null,
+                description: document.getElementById('editProductDescription').value.trim() || null
             };
+            
+            if (!productData.name) {
+                notifyError('Ürün adı zorunludur!');
+                return;
+            }
+            
+            if (!productData.category_id) {
+                notifyError('Ürün kategorisi seçilmelidir!');
+                return;
+            }
+            
+            if (!productData.brand_id) {
+                notifyError('Ürün markası seçilmelidir!');
+                return;
+            }
             
             try {
                 const response = await fetch(`${API_BASE}/products/${id}`, {
@@ -1297,10 +2666,10 @@ async function editProduct(id) {
                     loadProducts();
                 } else {
                     const error = await response.json();
-                    notifyError(error.detail || 'Bilinmeyen hata');
+                    notifyError(error.detail || 'Ürün güncellenirken hata oluştu');
                 }
             } catch (error) {
-                notifyError(error.message);
+                notifyError('Bağlantı hatası: ' + error.message);
             }
         });
         

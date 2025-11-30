@@ -1,6 +1,7 @@
 """Database models"""
 from app.models.base import BaseModel
 from app.models.customer import Customer
+from app.models.customer_contact import CustomerContact
 from app.models.product import Product, CustomerProduct
 from app.models.user import User, Department, Role
 from app.models.case import (
@@ -16,6 +17,7 @@ from app.models.product_brand import ProductBrand
 __all__ = [
     "BaseModel",
     "Customer",
+    "CustomerContact",
     "CustomerProduct",
     "Product",
     "User",

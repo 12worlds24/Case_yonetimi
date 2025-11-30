@@ -2,10 +2,12 @@
 Product API endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from app.database import get_db
 from app.models.product import Product
+from app.models.product_category import ProductCategory
+from app.models.product_brand import ProductBrand
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
 from app.auth.dependencies import get_current_active_user, require_admin_or_manager, require_admin
 from app.models.user import User
@@ -27,7 +29,10 @@ async def get_products(
 ):
     """Get list of products"""
     try:
-        query = db.query(Product)
+        query = db.query(Product).options(
+            joinedload(Product.category),
+            joinedload(Product.brand)
+        )
         if search:
             query = query.filter(Product.name.ilike(f"%{search}%"))
         products = query.offset(skip).limit(limit).all()
@@ -45,7 +50,10 @@ async def get_product(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get product by ID"""
-    product = db.query(Product).filter(Product.id == product_id).first()
+    product = db.query(Product).options(
+        joinedload(Product.category),
+        joinedload(Product.brand)
+    ).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     return product
@@ -60,10 +68,40 @@ async def create_product(
 ):
     """Create new product"""
     try:
-        product = Product(**product_data.dict())
+        # Validate category if provided
+        if product_data.category_id:
+            category = db.query(ProductCategory).filter(ProductCategory.id == product_data.category_id).first()
+            if not category:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Geçersiz kategori ID"
+                )
+        
+        # Validate brand if provided
+        if product_data.brand_id:
+            brand = db.query(ProductBrand).filter(ProductBrand.id == product_data.brand_id).first()
+            if not brand:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Geçersiz marka ID"
+                )
+        
+        product_data_dict = product_data.dict(exclude_unset=True)
+        # Remove None values for category_id and brand_id
+        if 'category_id' in product_data_dict and product_data_dict['category_id'] is None:
+            product_data_dict.pop('category_id')
+        if 'brand_id' in product_data_dict and product_data_dict['brand_id'] is None:
+            product_data_dict.pop('brand_id')
+        
+        product = Product(**product_data_dict)
         db.add(product)
         db.commit()
         db.refresh(product)
+        # Reload with relationships
+        product = db.query(Product).options(
+            joinedload(Product.category),
+            joinedload(Product.brand)
+        ).filter(Product.id == product.id).first()
         logger.info(f"Product created: {product.id} by user {current_user.id}")
         return product
     except Exception as e:
@@ -87,10 +125,38 @@ async def update_product(
     
     try:
         update_data = product_data.dict(exclude_unset=True)
+        
+        # Validate category if provided
+        if 'category_id' in update_data and update_data['category_id']:
+            category = db.query(ProductCategory).filter(ProductCategory.id == update_data['category_id']).first()
+            if not category:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Geçersiz kategori ID"
+                )
+        elif 'category_id' in update_data and update_data['category_id'] is None:
+            update_data['category_id'] = None
+        
+        # Validate brand if provided
+        if 'brand_id' in update_data and update_data['brand_id']:
+            brand = db.query(ProductBrand).filter(ProductBrand.id == update_data['brand_id']).first()
+            if not brand:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Geçersiz marka ID"
+                )
+        elif 'brand_id' in update_data and update_data['brand_id'] is None:
+            update_data['brand_id'] = None
+        
         for field, value in update_data.items():
             setattr(product, field, value)
         db.commit()
         db.refresh(product)
+        # Reload with relationships
+        product = db.query(Product).options(
+            joinedload(Product.category),
+            joinedload(Product.brand)
+        ).filter(Product.id == product_id).first()
         logger.info(f"Product updated: {product.id} by user {current_user.id}")
         return product
     except Exception as e:
@@ -119,6 +185,7 @@ async def delete_product(
         db.rollback()
         logger.exception(f"Error deleting product: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete product")
+
 
 
 

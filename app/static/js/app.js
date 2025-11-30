@@ -41,14 +41,8 @@ document.getElementById('loginFormElement')?.addEventListener('submit', async fu
             currentUser = data.user;
             localStorage.setItem('authToken', authToken);
             
-            // Check if user is admin, redirect to admin panel
-            const isAdmin = data.user.roles && data.user.roles.some(r => r.name === 'Admin' || r.name === 'Yönetici');
-            if (isAdmin) {
-                // Redirect to admin panel immediately
-                window.location.replace('/admin.html');
-            } else {
-                showDashboard();
-            }
+            // Redirect all users to admin panel
+            window.location.replace('/admin.html');
         } else {
             showError(data.detail || 'Giriş başarısız');
         }
@@ -68,8 +62,8 @@ async function checkAuth() {
         });
         
         if (response.ok) {
-            // User is authenticated, show dashboard
-            showDashboard();
+            // User is authenticated, redirect to admin panel
+            window.location.replace('/admin.html');
         } else if (response.status === 401 || response.status === 403) {
             // Not authenticated
             localStorage.removeItem('authToken');
