@@ -39,14 +39,31 @@ async def get_customers(
                 Customer.tax_number.ilike(f"%{search}%")
             )
         
+        from app.models.product_category import ProductCategory
+        from app.models.product_brand import ProductBrand
+        
         customers = query.options(
-            joinedload(Customer.products).joinedload(CustomerProduct.product),
+            joinedload(Customer.products).joinedload(CustomerProduct.product).joinedload(Product.category),
+            joinedload(Customer.products).joinedload(CustomerProduct.product).joinedload(Product.brand),
             joinedload(Customer.contacts)
         ).offset(skip).limit(limit).all()
         
         # Format response
         result = []
         for customer in customers:
+            # Format products with full details
+            products_list = []
+            if customer.products:
+                for cp in customer.products:
+                    product = cp.product
+                    products_list.append({
+                        "id": product.id,
+                        "name": product.name,
+                        "code": product.code,
+                        "category": {"id": product.category.id, "name": product.category.name} if product.category else None,
+                        "brand": {"id": product.brand.id, "name": product.brand.name} if product.brand else None
+                    })
+            
             customer_dict = {
                 "id": customer.id,
                 "company_name": customer.company_name,
@@ -57,7 +74,7 @@ async def get_customers(
                 "notes": customer.notes,
                 "created_at": customer.created_at,
                 "updated_at": customer.updated_at,
-                "products": [{"id": cp.product.id, "name": cp.product.name} for cp in customer.products] if customer.products else [],
+                "products": products_list,
                 "contacts": [{"id": c.id, "full_name": c.full_name, "phone": c.phone, "email": c.email, "title": c.title} for c in customer.contacts] if customer.contacts else []
             }
             result.append(customer_dict)
@@ -79,8 +96,13 @@ async def get_customer(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get customer by ID"""
+    from sqlalchemy.orm import joinedload
+    from app.models.product_category import ProductCategory
+    from app.models.product_brand import ProductBrand
+    
     customer = db.query(Customer).options(
-        joinedload(Customer.products).joinedload(CustomerProduct.product),
+        joinedload(Customer.products).joinedload(CustomerProduct.product).joinedload(Product.category),
+        joinedload(Customer.products).joinedload(CustomerProduct.product).joinedload(Product.brand),
         joinedload(Customer.contacts)
     ).filter(Customer.id == customer_id).first()
     if not customer:
@@ -89,7 +111,20 @@ async def get_customer(
             detail="Customer not found"
         )
     
-    # Format response
+    # Format response with full product details
+    products_list = []
+    if customer.products:
+        for cp in customer.products:
+            product = cp.product
+            product_dict = {
+                "id": product.id,
+                "name": product.name,
+                "code": product.code,
+                "category": {"id": product.category.id, "name": product.category.name} if product.category else None,
+                "brand": {"id": product.brand.id, "name": product.brand.name} if product.brand else None
+            }
+            products_list.append(product_dict)
+    
     customer_dict = {
         "id": customer.id,
         "company_name": customer.company_name,
@@ -100,7 +135,7 @@ async def get_customer(
         "notes": customer.notes,
         "created_at": customer.created_at,
         "updated_at": customer.updated_at,
-        "products": [{"id": cp.product.id, "name": cp.product.name} for cp in customer.products] if customer.products else [],
+        "products": products_list,
         "contacts": [{"id": c.id, "full_name": c.full_name, "phone": c.phone, "email": c.email, "title": c.title} for c in customer.contacts] if customer.contacts else []
     }
     return customer_dict

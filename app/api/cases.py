@@ -138,13 +138,28 @@ async def create_case(
                 db.add(assignment)
         
         db.commit()
-        db.refresh(case)
+        
+        # Reload case with all relationships to avoid DetachedInstanceError
+        case = db.query(Case).options(
+            joinedload(Case.customer),
+            joinedload(Case.product),
+            joinedload(Case.creator),
+            joinedload(Case.assigned_user),
+            joinedload(Case.department),
+            joinedload(Case.priority_type),
+            joinedload(Case.support_type),
+            joinedload(Case.status),
+            joinedload(Case.assignments).joinedload(CaseAssignment.user),
+            joinedload(Case.comments).joinedload(CaseComment.user),
+            joinedload(Case.files)
+        ).filter(Case.id == case.id).first()
+        
         logger.info(f"Case created: {case.id} (Ticket: {ticket_number}) by user {current_user.id}")
         return case
     except Exception as e:
         db.rollback()
         logger.exception(f"Error creating case: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create case")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to create case: {str(e)}")
 
 
 @router.put("/{case_id}", response_model=CaseResponse)

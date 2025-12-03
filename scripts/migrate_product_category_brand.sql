@@ -71,3 +71,5 @@ WHERE table_name = 'products'
 AND column_name IN ('category_id', 'brand_id');
 
 
+
+

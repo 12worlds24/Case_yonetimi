@@ -190,3 +190,5 @@ Hepsi çalışıyorsa, sistem hazır demektir!
 
 
 
+
+

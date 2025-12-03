@@ -288,9 +288,15 @@
 - Kod kalitesi ve güvenlik ön planda tutuldu
 
 ---
+**Son Güncelleme:** 2025-12-03
+**Versiyon:** 1.0.1
 
-**Son Güncelleme:** 2025-11-29  
-**Versiyon:** 1.0.0
+## 2025-12-03 - Hata Düzeltmeleri
+
+### 🐛 Hata Düzeltmeleri
+
+#### Müşteri Yönetimi
+- ✅ Müşteri detaylarında "Ürünler" sekmesine tıklandığında ürünlerin listelenmemesi sorunu düzeltildi. Tab geçişlerinde tablo render işlemi tetiklenerek görünürlük sağlandı.
 
 
 

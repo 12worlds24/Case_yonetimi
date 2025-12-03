@@ -7,7 +7,7 @@ let departments = [];
 let roles = [];
 
 // Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     if (!authToken) {
         window.location.replace('/');
         return;
@@ -44,27 +44,27 @@ async function loadUsers() {
         const response = await fetch(`${API_BASE}/users`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
             setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: response.statusText }));
             throw new Error(errorData.detail || `HTTP ${response.status}`);
         }
-        
+
         const users = await response.json();
-        
+
         const tbody = document.getElementById('usersTable');
         if (users.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" class="text-center">Kullanıcı bulunamadı</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = users.map(user => `
             <tr>
                 <td>${user.id}</td>
@@ -98,7 +98,7 @@ function showAddUserModal() {
     ]).then(([depts, rols]) => {
         departments = depts;
         roles = rols;
-        
+
         const modal = createModal('addUserModal', 'Yeni Kullanıcı Ekle', `
             <form id="addUserForm" class="modal-form">
                 <div class="form-grid">
@@ -187,7 +187,7 @@ function showAddUserModal() {
         `, async () => {
             const form = document.getElementById('addUserForm');
             const roleIds = Array.from(document.querySelectorAll('#addUserForm input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
-            
+
             const userData = {
                 email: document.getElementById('userEmail').value,
                 password: document.getElementById('userPassword').value,
@@ -206,7 +206,7 @@ function showAddUserModal() {
                 notifyWarning('Lütfen en az bir rol seçin.');
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_BASE}/users`, {
                     method: 'POST',
@@ -216,7 +216,7 @@ function showAddUserModal() {
                     },
                     body: JSON.stringify(userData)
                 });
-                
+
                 if (response.ok) {
                     notifySuccess('Kullanıcı başarıyla eklendi!');
                     bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
@@ -229,7 +229,7 @@ function showAddUserModal() {
                 notifyError(error.message);
             }
         });
-        
+
         const modalElement = new bootstrap.Modal(document.getElementById('addUserModal'));
         modalElement.show();
     });
@@ -241,32 +241,32 @@ async function loadCustomers() {
         const response = await fetch(`${API_BASE}/customers`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
             setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: response.statusText }));
             throw new Error(errorData.detail || `HTTP ${response.status}`);
         }
-        
+
         const customers = await response.json();
-        
+
         const tbody = document.getElementById('customersTable');
         if (!customers || !Array.isArray(customers)) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
             return;
         }
-        
+
         if (customers.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center">Müşteri bulunamadı</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = customers.map(customer => `
             <tr>
                 <td>${customer.id}</td>
@@ -301,10 +301,10 @@ async function showAddCustomerModal() {
         headers: { 'Authorization': `Bearer ${authToken}` }
     });
     const allProducts = productsResponse.ok ? await productsResponse.json() : [];
-    
+
     let contactCounter = 0;
     const contacts = [];
-    
+
     function addContactRow() {
         const contactId = `contact_${contactCounter++}`;
         contacts.push(contactId);
@@ -340,8 +340,8 @@ async function showAddCustomerModal() {
         `;
         document.getElementById('contactsContainer').insertAdjacentHTML('beforeend', contactHTML);
     }
-    
-    window.removeContact = function(contactId) {
+
+    window.removeContact = function (contactId) {
         const item = document.getElementById(`contactItem_${contactId}`);
         if (item) {
             item.remove();
@@ -349,7 +349,7 @@ async function showAddCustomerModal() {
             if (index > -1) contacts.splice(index, 1);
         }
     };
-    
+
     const modalHTML = `
         <div class="modal fade" id="addCustomerModal" tabindex="-1">
             <div class="modal-dialog modal-fullscreen-lg-down" style="max-width: 95vw;">
@@ -425,38 +425,38 @@ async function showAddCustomerModal() {
             </div>
         </div>
     `;
-    
+
     // Remove existing modal if any
     const existingModal = document.getElementById('addCustomerModal');
     if (existingModal) {
         existingModal.remove();
     }
-    
+
     // Add modal to page
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
+
     // Initialize modal
     const modalElement = new bootstrap.Modal(document.getElementById('addCustomerModal'));
-    
+
     // Make addContactRow available globally
     window.addContactRow = addContactRow;
-    
+
     // Initialize with one contact
     addContactRow();
-    
+
     // Initialize product selection
     let selectedProductIds = [];
     const activeProducts = allProducts.filter(p => p.is_active !== 0);
-    
+
     function renderSelectedProductTags() {
         const container = document.getElementById('selectedProductTags');
         if (!container) return;
-        
+
         if (selectedProductIds.length === 0) {
             container.innerHTML = '<div class="text-muted small">Henüz ürün seçilmedi</div>';
             return;
         }
-        
+
         container.innerHTML = selectedProductIds.map(productId => {
             const product = activeProducts.find(p => p.id === productId);
             if (!product) return '';
@@ -468,23 +468,23 @@ async function showAddCustomerModal() {
             `;
         }).join('');
     }
-    
+
     function filterProducts(searchTerm) {
         const term = searchTerm.toLowerCase();
-        return activeProducts.filter(p => 
-            !selectedProductIds.includes(p.id) && 
+        return activeProducts.filter(p =>
+            !selectedProductIds.includes(p.id) &&
             p.name.toLowerCase().includes(term)
         );
     }
-    
+
     function showProductDropdown() {
         const dropdown = document.getElementById('productDropdown');
         const input = document.getElementById('productSearchInput');
         if (!dropdown || !input) return;
-        
+
         const searchTerm = input.value.trim();
         const filtered = filterProducts(searchTerm);
-        
+
         if (filtered.length === 0) {
             dropdown.innerHTML = '<div class="dropdown-item text-muted">Ürün bulunamadı</div>';
         } else {
@@ -494,18 +494,18 @@ async function showAddCustomerModal() {
                 </div>
             `).join('');
         }
-        
+
         dropdown.style.display = 'block';
     }
-    
+
     function hideProductDropdown() {
         const dropdown = document.getElementById('productDropdown');
         if (dropdown) {
             setTimeout(() => dropdown.style.display = 'none', 200);
         }
     }
-    
-    window.selectProduct = function(productId) {
+
+    window.selectProduct = function (productId) {
         if (!selectedProductIds.includes(productId)) {
             selectedProductIds.push(productId);
             renderSelectedProductTags();
@@ -514,38 +514,38 @@ async function showAddCustomerModal() {
             hideProductDropdown();
         }
     };
-    
-    window.removeProductTag = function(productId) {
+
+    window.removeProductTag = function (productId) {
         selectedProductIds = selectedProductIds.filter(id => id !== productId);
         renderSelectedProductTags();
     };
-    
+
     // Setup product search input
     setTimeout(() => {
         const productInput = document.getElementById('productSearchInput');
         const productDropdown = document.getElementById('productDropdown');
-        
+
         if (productInput) {
             productInput.addEventListener('input', showProductDropdown);
             productInput.addEventListener('focus', showProductDropdown);
             productInput.addEventListener('blur', hideProductDropdown);
         }
-        
+
         if (productDropdown) {
             productDropdown.addEventListener('mousedown', (e) => e.preventDefault());
         }
-        
+
         renderSelectedProductTags();
     }, 100);
-    
+
     // Save function
-    window.saveCustomer = async function() {
+    window.saveCustomer = async function () {
         const form = document.getElementById('addCustomerForm');
         if (!form || !form.checkValidity()) {
             form.reportValidity();
             return;
         }
-        
+
         try {
             // Collect contacts
             const contactList = [];
@@ -560,10 +560,10 @@ async function showAddCustomerModal() {
                     });
                 }
             });
-            
+
             // Collect selected products from tags
             const selectedProducts = selectedProductIds.length > 0 ? selectedProductIds : null;
-            
+
             const customerData = {
                 company_name: document.getElementById('customerCompanyName').value,
                 address: document.getElementById('customerAddress').value || null,
@@ -574,7 +574,7 @@ async function showAddCustomerModal() {
                 product_ids: selectedProducts.length > 0 ? selectedProducts : null,
                 contacts: contactList.length > 0 ? contactList : null
             };
-            
+
             const response = await fetch(`${API_BASE}/customers`, {
                 method: 'POST',
                 headers: {
@@ -583,7 +583,7 @@ async function showAddCustomerModal() {
                 },
                 body: JSON.stringify(customerData)
             });
-            
+
             if (response.ok) {
                 notifySuccess('Müşteri başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addCustomerModal')).hide();
@@ -596,7 +596,7 @@ async function showAddCustomerModal() {
             notifyError(error.message);
         }
     };
-    
+
     modalElement.show();
 }
 
@@ -633,32 +633,32 @@ async function loadProductCategories() {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         console.log('Response status:', response.status);
-        
+
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
             setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: response.statusText }));
             throw new Error(errorData.detail || `HTTP ${response.status}`);
         }
-        
+
         const categories = await response.json();
-        
+
         const tbody = document.getElementById('productCategoriesTable');
         if (!categories || !Array.isArray(categories)) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
             return;
         }
-        
+
         if (categories.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center">Kategori bulunamadı</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = categories.map(cat => `
             <tr>
                 <td>${cat.id}</td>
@@ -723,12 +723,12 @@ function showAddProductCategoryModal() {
             sort_order: parseInt(document.getElementById('productCategorySortOrder').value) || 0,
             is_active: document.getElementById('productCategoryIsActive').checked ? 1 : 0
         };
-        
+
         if (!categoryData.name) {
             notifyError('Kategori adı zorunludur!');
             return;
         }
-        
+
         try {
             const response = await fetch(`${API_BASE}/product-categories`, {
                 method: 'POST',
@@ -738,7 +738,7 @@ function showAddProductCategoryModal() {
                 },
                 body: JSON.stringify(categoryData)
             });
-            
+
             if (response.ok) {
                 notifySuccess('Kategori başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addProductCategoryModal')).hide();
@@ -751,7 +751,7 @@ function showAddProductCategoryModal() {
             notifyError('Bağlantı hatası: ' + error.message);
         }
     });
-    
+
     const modalElement = new bootstrap.Modal(document.getElementById('addProductCategoryModal'));
     modalElement.show();
 }
@@ -761,20 +761,20 @@ async function editProductCategory(id) {
         const response = await fetch(`${API_BASE}/product-categories`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (!response.ok) {
             notifyError('Kategori bilgileri yüklenemedi');
             return;
         }
-        
+
         const categories = await response.json();
         const category = categories.find(c => c.id === id);
-        
+
         if (!category) {
             notifyError('Kategori bulunamadı');
             return;
         }
-        
+
         const modal = createModal('editProductCategoryModal', 'Kategori Düzenle', `
             <form id="editProductCategoryForm">
                 <div class="mb-3">
@@ -811,12 +811,12 @@ async function editProductCategory(id) {
                 sort_order: parseInt(document.getElementById('editProductCategorySortOrder').value) || 0,
                 is_active: document.getElementById('editProductCategoryIsActive').checked ? 1 : 0
             };
-            
+
             if (!categoryData.name) {
                 notifyError('Kategori adı zorunludur!');
                 return;
             }
-            
+
             try {
                 const updateResponse = await fetch(`${API_BASE}/product-categories/${id}`, {
                     method: 'PUT',
@@ -826,7 +826,7 @@ async function editProductCategory(id) {
                     },
                     body: JSON.stringify(categoryData)
                 });
-                
+
                 if (updateResponse.ok) {
                     notifySuccess('Kategori başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editProductCategoryModal')).hide();
@@ -839,7 +839,7 @@ async function editProductCategory(id) {
                 notifyError('Bağlantı hatası: ' + error.message);
             }
         });
-        
+
         const modalElement = new bootstrap.Modal(document.getElementById('editProductCategoryModal'));
         modalElement.show();
     } catch (error) {
@@ -851,7 +851,7 @@ async function deleteProductCategory(id) {
     if (!confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
         return;
     }
-    
+
     try {
         const response = await fetch(`${API_BASE}/product-categories/${id}`, {
             method: 'DELETE',
@@ -859,7 +859,7 @@ async function deleteProductCategory(id) {
                 'Authorization': `Bearer ${authToken}`
             }
         });
-        
+
         if (response.ok || response.status === 204) {
             notifySuccess('Kategori başarıyla silindi!');
             loadProductCategories();
@@ -880,32 +880,32 @@ async function loadProductBrands() {
         const response = await fetch(`${API_BASE}/product-brands`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
             setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: response.statusText }));
             throw new Error(errorData.detail || `HTTP ${response.status}`);
         }
-        
+
         const brands = await response.json();
-        
+
         const tbody = document.getElementById('productBrandsTable');
         if (!brands || !Array.isArray(brands)) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
             return;
         }
-        
+
         if (brands.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center">Marka bulunamadı</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = brands.map(brand => `
             <tr>
                 <td>${brand.id}</td>
@@ -946,12 +946,12 @@ async function showAddProductBrandModal() {
     } catch (error) {
         console.error('Error loading categories:', error);
     }
-    
+
     const categoryOptions = categories
         .filter(cat => cat.is_active === 1)
         .map(cat => `<option value="${cat.id}">${cat.name}</option>`)
         .join('');
-    
+
     const modal = createModal('addProductBrandModal', 'Yeni Marka Ekle', `
         <form id="addProductBrandForm">
             <div class="mb-3">
@@ -1000,12 +1000,12 @@ async function showAddProductBrandModal() {
             sort_order: parseInt(document.getElementById('productBrandSortOrder').value) || 0,
             is_active: document.getElementById('productBrandIsActive').checked ? 1 : 0
         };
-        
+
         if (!brandData.name) {
             notifyError('Marka adı zorunludur!');
             return;
         }
-        
+
         try {
             const response = await fetch(`${API_BASE}/product-brands`, {
                 method: 'POST',
@@ -1015,7 +1015,7 @@ async function showAddProductBrandModal() {
                 },
                 body: JSON.stringify(brandData)
             });
-            
+
             if (response.ok) {
                 notifySuccess('Marka başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addProductBrandModal')).hide();
@@ -1028,7 +1028,7 @@ async function showAddProductBrandModal() {
             notifyError('Bağlantı hatası: ' + error.message);
         }
     });
-    
+
     const modalElement = new bootstrap.Modal(document.getElementById('addProductBrandModal'));
     modalElement.show();
 }
@@ -1044,31 +1044,31 @@ async function editProductBrand(id) {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             })
         ]);
-        
+
         if (!brandsResponse.ok) {
             notifyError('Marka bilgileri yüklenemedi');
             return;
         }
-        
+
         const brands = await brandsResponse.json();
         const brand = brands.find(b => b.id === id);
-        
+
         if (!brand) {
             notifyError('Marka bulunamadı');
             return;
         }
-        
+
         // Load categories for dropdown
         let categories = [];
         if (categoriesResponse.ok) {
             categories = await categoriesResponse.json();
         }
-        
+
         const categoryOptions = categories
             .filter(cat => cat.is_active === 1)
             .map(cat => `<option value="${cat.id}" ${brand.category_id === cat.id ? 'selected' : ''}>${cat.name}</option>`)
             .join('');
-        
+
         const modal = createModal('editProductBrandModal', 'Marka Düzenle', `
             <form id="editProductBrandForm">
                 <div class="mb-3">
@@ -1116,12 +1116,12 @@ async function editProductBrand(id) {
                 sort_order: parseInt(document.getElementById('editProductBrandSortOrder').value) || 0,
                 is_active: document.getElementById('editProductBrandIsActive').checked ? 1 : 0
             };
-            
+
             if (!brandData.name) {
                 notifyError('Marka adı zorunludur!');
                 return;
             }
-            
+
             try {
                 const updateResponse = await fetch(`${API_BASE}/product-brands/${id}`, {
                     method: 'PUT',
@@ -1131,7 +1131,7 @@ async function editProductBrand(id) {
                     },
                     body: JSON.stringify(brandData)
                 });
-                
+
                 if (updateResponse.ok) {
                     notifySuccess('Marka başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editProductBrandModal')).hide();
@@ -1144,7 +1144,7 @@ async function editProductBrand(id) {
                 notifyError('Bağlantı hatası: ' + error.message);
             }
         });
-        
+
         const modalElement = new bootstrap.Modal(document.getElementById('editProductBrandModal'));
         modalElement.show();
     } catch (error) {
@@ -1156,7 +1156,7 @@ async function deleteProductBrand(id) {
     if (!confirm('Bu markayı silmek istediğinize emin misiniz?')) {
         return;
     }
-    
+
     try {
         const response = await fetch(`${API_BASE}/product-brands/${id}`, {
             method: 'DELETE',
@@ -1164,7 +1164,7 @@ async function deleteProductBrand(id) {
                 'Authorization': `Bearer ${authToken}`
             }
         });
-        
+
         if (response.ok || response.status === 204) {
             notifySuccess('Marka başarıyla silindi!');
             loadProductBrands();
@@ -1183,32 +1183,32 @@ async function loadProducts() {
         const response = await fetch(`${API_BASE}/products`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
             setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: response.statusText }));
             throw new Error(errorData.detail || `HTTP ${response.status}`);
         }
-        
+
         const products = await response.json();
-        
+
         const tbody = document.getElementById('productsTable');
         if (!products || !Array.isArray(products)) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
             return;
         }
-        
+
         if (products.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center">Ürün bulunamadı</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = products.map(product => `
             <tr>
                 <td>${product.id}</td>
@@ -1246,7 +1246,7 @@ async function showAddProductModal() {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             })
         ]);
-        
+
         if (catResponse.ok) {
             categories = await catResponse.json();
         }
@@ -1256,17 +1256,17 @@ async function showAddProductModal() {
     } catch (error) {
         console.error('Error loading categories/brands:', error);
     }
-    
+
     const categoryOptions = categories
         .filter(cat => cat.is_active === 1)
         .map(cat => `<option value="${cat.id}">${cat.name}</option>`)
         .join('');
-    
+
     const brandOptions = brands
         .filter(brand => brand.is_active === 1)
         .map(brand => `<option value="${brand.id}">${brand.name}</option>`)
         .join('');
-    
+
     const modal = createModal('addProductModal', 'Yeni Ürün Ekle', `
         <form id="addProductForm">
             <div class="mb-3">
@@ -1309,7 +1309,7 @@ async function showAddProductModal() {
     `, async () => {
         const categorySelect = document.getElementById('productCategory');
         const brandSelect = document.getElementById('productBrand');
-        
+
         const productData = {
             name: document.getElementById('productName').value.trim(),
             code: document.getElementById('productCode').value.trim() || null,
@@ -1317,22 +1317,22 @@ async function showAddProductModal() {
             brand_id: brandSelect.value ? parseInt(brandSelect.value) : null,
             description: document.getElementById('productDescription').value.trim() || null
         };
-        
+
         if (!productData.name) {
             notifyError('Ürün adı zorunludur!');
             return;
         }
-        
+
         if (!productData.category_id) {
             notifyError('Ürün kategorisi seçilmelidir!');
             return;
         }
-        
+
         if (!productData.brand_id) {
             notifyError('Ürün markası seçilmelidir!');
             return;
         }
-        
+
         try {
             const response = await fetch(`${API_BASE}/products`, {
                 method: 'POST',
@@ -1342,7 +1342,7 @@ async function showAddProductModal() {
                 },
                 body: JSON.stringify(productData)
             });
-            
+
             if (response.ok) {
                 notifySuccess('Ürün başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
@@ -1355,7 +1355,7 @@ async function showAddProductModal() {
             notifyError('Bağlantı hatası: ' + error.message);
         }
     });
-    
+
     const modalElement = new bootstrap.Modal(document.getElementById('addProductModal'));
     modalElement.show();
 }
@@ -1366,33 +1366,33 @@ async function loadDepartments() {
         const response = await fetch(`${API_BASE}/users/departments`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
             setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: response.statusText }));
             throw new Error(errorData.detail || `HTTP ${response.status}`);
         }
-        
+
         const depts = await response.json();
         departments = depts;
-        
+
         const tbody = document.getElementById('departmentsTable');
         if (!depts || !Array.isArray(depts)) {
             tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
             return;
         }
-        
+
         if (depts.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" class="text-center">Departman bulunamadı</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = depts.map(dept => `
             <tr>
                 <td>${dept.id}</td>
@@ -1434,7 +1434,7 @@ function showAddDepartmentModal() {
             name: document.getElementById('departmentName').value,
             description: document.getElementById('departmentDescription').value || null
         };
-        
+
         try {
             const response = await fetch(`${API_BASE}/users/departments`, {
                 method: 'POST',
@@ -1444,7 +1444,7 @@ function showAddDepartmentModal() {
                 },
                 body: JSON.stringify(deptData)
             });
-            
+
             if (response.ok) {
                 notifySuccess('Departman başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addDepartmentModal')).hide();
@@ -1457,7 +1457,7 @@ function showAddDepartmentModal() {
             notifyError(error.message);
         }
     });
-    
+
     const modalElement = new bootstrap.Modal(document.getElementById('addDepartmentModal'));
     modalElement.show();
 }
@@ -1468,33 +1468,33 @@ async function loadRoles() {
         const response = await fetch(`${API_BASE}/users/roles`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
             setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: response.statusText }));
             throw new Error(errorData.detail || `HTTP ${response.status}`);
         }
-        
+
         const rols = await response.json();
         roles = rols;
-        
+
         const tbody = document.getElementById('rolesTable');
         if (!rols || !Array.isArray(rols)) {
             tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
             return;
         }
-        
+
         if (rols.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" class="text-center">Rol bulunamadı</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = rols.map(role => `
             <tr>
                 <td>${role.id}</td>
@@ -1536,7 +1536,7 @@ function showAddRoleModal() {
             name: document.getElementById('roleName').value,
             description: document.getElementById('roleDescription').value || null
         };
-        
+
         try {
             const response = await fetch(`${API_BASE}/users/roles`, {
                 method: 'POST',
@@ -1546,7 +1546,7 @@ function showAddRoleModal() {
                 },
                 body: JSON.stringify(roleData)
             });
-            
+
             if (response.ok) {
                 notifySuccess('Rol başarıyla eklendi!');
                 bootstrap.Modal.getInstance(document.getElementById('addRoleModal')).hide();
@@ -1559,7 +1559,7 @@ function showAddRoleModal() {
             notifyError(error.message);
         }
     });
-    
+
     const modalElement = new bootstrap.Modal(document.getElementById('addRoleModal'));
     modalElement.show();
 }
@@ -1570,32 +1570,32 @@ async function loadCases() {
         const response = await fetch(`${API_BASE}/cases`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('authToken');
             notifyError('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
             setTimeout(() => window.location.replace('/'), 2000);
             return;
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: response.statusText }));
             throw new Error(errorData.detail || `HTTP ${response.status}`);
         }
-        
+
         const cases = await response.json();
-        
+
         const tbody = document.getElementById('casesTable');
         if (!cases || !Array.isArray(cases)) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Hata: Geçersiz veri formatı</td></tr>';
             return;
         }
-        
+
         if (cases.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center">Case bulunamadı</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = cases.map(caseItem => `
             <tr>
                 <td>${caseItem.id}</td>
@@ -1654,14 +1654,14 @@ function createModal(id, title, body, onSave) {
         console.error('modalsContainer not found!');
         return null;
     }
-    
+
     // Remove existing modal if exists
     const existing = document.getElementById(id);
     if (existing) existing.remove();
-    
+
     // Generate unique function name
     const saveFunctionName = `save${id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, '')}`;
-    
+
     const modalHTML = `
         <div class="modal fade custom-modal" id="${id}" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -1685,9 +1685,9 @@ function createModal(id, title, body, onSave) {
             </div>
         </div>
     `;
-    
+
     modalsContainer.insertAdjacentHTML('beforeend', modalHTML);
-    
+
     // Wait for DOM to update, then attach event listener
     setTimeout(() => {
         const modalElement = document.getElementById(id);
@@ -1695,25 +1695,25 @@ function createModal(id, title, body, onSave) {
             console.error('Modal element not found:', id);
             return;
         }
-        
+
         // Prevent form submission
         const form = modalElement.querySelector('form');
         if (form) {
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
             });
         }
-        
+
         const saveBtn = document.getElementById(`${id}-save-btn`);
         if (saveBtn && onSave) {
             // Remove any existing listeners by cloning
             const newSaveBtn = saveBtn.cloneNode(true);
             saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-            
+
             // Attach event listener to save button
-            newSaveBtn.addEventListener('click', async function(e) {
+            newSaveBtn.addEventListener('click', async function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('Save button clicked for modal:', id);
@@ -1729,7 +1729,7 @@ function createModal(id, title, body, onSave) {
             console.error('Save button not found or onSave not provided:', id, saveBtn, onSave);
         }
     }, 50);
-    
+
     return document.getElementById(id);
 }
 
@@ -1743,7 +1743,7 @@ const toastIcons = {
 function showToast(type = 'success', title = 'Başarılı', message = 'İşlem tamamlandı') {
     const container = document.getElementById('toastContainer');
     if (!container) return;
-    
+
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.innerHTML = `
@@ -1756,12 +1756,12 @@ function showToast(type = 'success', title = 'Başarılı', message = 'İşlem t
         </div>
         <button class="toast-close" aria-label="Kapat">&times;</button>
     `;
-    
+
     toast.querySelector('.toast-close').addEventListener('click', () => hideToast(toast));
-    
+
     container.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('show'));
-    
+
     setTimeout(() => hideToast(toast), 4000);
 }
 
@@ -1802,7 +1802,7 @@ function combinePhone(codeId, numberId) {
 }
 
 // Logout function - make sure it's globally accessible
-window.logout = function() {
+window.logout = function () {
     try {
         localStorage.removeItem('authToken');
         authToken = null;
@@ -1822,22 +1822,22 @@ async function editUser(id) {
         const response = await fetch(`${API_BASE}/users`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (!response.ok) throw new Error('Kullanıcı verileri yüklenemedi');
-        
+
         const users = await response.json();
         const user = users.find(u => u.id === id);
         if (!user) throw new Error('Kullanıcı bulunamadı');
-        
+
         // Load departments and roles
         const [deptsRes, rolesRes] = await Promise.all([
             fetch(`${API_BASE}/users/departments`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
             fetch(`${API_BASE}/users/roles`, { headers: { 'Authorization': `Bearer ${authToken}` } })
         ]);
-        
+
         const depts = await deptsRes.json();
         const rols = await rolesRes.json();
-        
+
         const modal = createModal('editUserModal', 'Kullanıcı Düzenle', `
             <form id="editUserForm" class="modal-form">
                 <div class="form-grid">
@@ -1897,7 +1897,7 @@ async function editUser(id) {
             </form>
         `, async () => {
             const roleIds = Array.from(document.querySelectorAll('#editUserForm input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
-            
+
             const userData = {
                 email: document.getElementById('editUserEmail').value,
                 full_name: document.getElementById('editUserFullName').value,
@@ -1905,17 +1905,17 @@ async function editUser(id) {
                 is_active: parseInt(document.getElementById('editUserStatus').value),
                 role_ids: roleIds
             };
-            
+
             const password = document.getElementById('editUserPassword').value;
             if (password) {
                 userData.password = password;
             }
-            
+
             if (!roleIds.length) {
                 notifyWarning('Lütfen en az bir rol seçin.');
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_BASE}/users/${id}`, {
                     method: 'PUT',
@@ -1925,7 +1925,7 @@ async function editUser(id) {
                     },
                     body: JSON.stringify(userData)
                 });
-                
+
                 if (response.ok) {
                     notifySuccess('Kullanıcı başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
@@ -1938,14 +1938,14 @@ async function editUser(id) {
                 notifyError(error.message);
             }
         });
-        
+
         const modalElement = new bootstrap.Modal(document.getElementById('editUserModal'));
         modalElement.show();
     } catch (error) {
         notifyError(error.message);
     }
 }
-async function deleteUser(id) { 
+async function deleteUser(id) {
     if (confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) {
         try {
             const response = await fetch(`${API_BASE}/users/${id}`, {
@@ -1972,18 +1972,18 @@ async function editCustomer(id) {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         const allProducts = productsResponse.ok ? await productsResponse.json() : [];
-        
+
         const response = await fetch(`${API_BASE}/customers/${id}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (!response.ok) throw new Error('Müşteri verileri yüklenemedi');
-        
+
         const customer = await response.json();
-        
+
         let contactCounter = 0;
         const contacts = [];
-        
+
         function addContactRow(contactData = null) {
             const contactId = `contact_${contactCounter++}`;
             contacts.push(contactId);
@@ -2019,8 +2019,8 @@ async function editCustomer(id) {
             `;
             document.getElementById('editContactsContainer').insertAdjacentHTML('beforeend', contactHTML);
         }
-        
-        window.removeEditContact = function(contactId) {
+
+        window.removeEditContact = function (contactId) {
             const item = document.getElementById(`contactItem_${contactId}`);
             if (item) {
                 item.remove();
@@ -2028,7 +2028,7 @@ async function editCustomer(id) {
                 if (index > -1) contacts.splice(index, 1);
             }
         };
-        
+
         const modalHTML = `
             <div class="modal fade" id="editCustomerModal" tabindex="-1">
                 <div class="modal-dialog modal-fullscreen-lg-down" style="max-width: 95vw;">
@@ -2104,24 +2104,24 @@ async function editCustomer(id) {
                 </div>
             </div>
         `;
-        
+
         // Remove existing modal if any
         const existingModal = document.getElementById('editCustomerModal');
         if (existingModal) {
             existingModal.remove();
         }
-        
+
         // Add modal to page
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
+
         // Initialize modal
         const modalElement = new bootstrap.Modal(document.getElementById('editCustomerModal'));
-        
+
         // Make addEditContactRow available globally
-        window.addEditContactRow = function() {
+        window.addEditContactRow = function () {
             addContactRow();
         };
-        
+
         // Load existing contacts
         if (customer.contacts && customer.contacts.length > 0) {
             customer.contacts.forEach(contact => {
@@ -2130,20 +2130,20 @@ async function editCustomer(id) {
         } else {
             addContactRow(); // Add one empty contact row
         }
-        
+
         // Initialize product selection for edit
         let editSelectedProductIds = customer.products ? customer.products.map(p => p.id) : [];
         const editActiveProducts = allProducts.filter(p => p.is_active !== 0);
-        
+
         function renderEditSelectedProductTags() {
             const container = document.getElementById('editSelectedProductTags');
             if (!container) return;
-            
+
             if (editSelectedProductIds.length === 0) {
                 container.innerHTML = '<div class="text-muted small">Henüz ürün seçilmedi</div>';
                 return;
             }
-            
+
             container.innerHTML = editSelectedProductIds.map(productId => {
                 const product = editActiveProducts.find(p => p.id === productId);
                 if (!product) return '';
@@ -2155,23 +2155,23 @@ async function editCustomer(id) {
                 `;
             }).join('');
         }
-        
+
         function filterEditProducts(searchTerm) {
             const term = searchTerm.toLowerCase();
-            return editActiveProducts.filter(p => 
-                !editSelectedProductIds.includes(p.id) && 
+            return editActiveProducts.filter(p =>
+                !editSelectedProductIds.includes(p.id) &&
                 p.name.toLowerCase().includes(term)
             );
         }
-        
+
         function showEditProductDropdown() {
             const dropdown = document.getElementById('editProductDropdown');
             const input = document.getElementById('editProductSearchInput');
             if (!dropdown || !input) return;
-            
+
             const searchTerm = input.value.trim();
             const filtered = filterEditProducts(searchTerm);
-            
+
             if (filtered.length === 0) {
                 dropdown.innerHTML = '<div class="dropdown-item text-muted">Ürün bulunamadı</div>';
             } else {
@@ -2181,18 +2181,18 @@ async function editCustomer(id) {
                     </div>
                 `).join('');
             }
-            
+
             dropdown.style.display = 'block';
         }
-        
+
         function hideEditProductDropdown() {
             const dropdown = document.getElementById('editProductDropdown');
             if (dropdown) {
                 setTimeout(() => dropdown.style.display = 'none', 200);
             }
         }
-        
-        window.selectEditProduct = function(productId) {
+
+        window.selectEditProduct = function (productId) {
             if (!editSelectedProductIds.includes(productId)) {
                 editSelectedProductIds.push(productId);
                 renderEditSelectedProductTags();
@@ -2201,38 +2201,38 @@ async function editCustomer(id) {
                 hideEditProductDropdown();
             }
         };
-        
-        window.removeEditProductTag = function(productId) {
+
+        window.removeEditProductTag = function (productId) {
             editSelectedProductIds = editSelectedProductIds.filter(id => id !== productId);
             renderEditSelectedProductTags();
         };
-        
+
         // Setup edit product search input
         setTimeout(() => {
             const productInput = document.getElementById('editProductSearchInput');
             const productDropdown = document.getElementById('editProductDropdown');
-            
+
             if (productInput) {
                 productInput.addEventListener('input', showEditProductDropdown);
                 productInput.addEventListener('focus', showEditProductDropdown);
                 productInput.addEventListener('blur', hideEditProductDropdown);
             }
-            
+
             if (productDropdown) {
                 productDropdown.addEventListener('mousedown', (e) => e.preventDefault());
             }
-            
+
             renderEditSelectedProductTags();
         }, 100);
-        
+
         // Update function
-        window.updateCustomer = async function(customerId) {
+        window.updateCustomer = async function (customerId) {
             const form = document.getElementById('editCustomerForm');
             if (!form || !form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
-            
+
             try {
                 // Collect contacts
                 const contactList = [];
@@ -2247,10 +2247,10 @@ async function editCustomer(id) {
                         });
                     }
                 });
-                
+
                 // Collect selected products from tags
                 const selectedProducts = editSelectedProductIds.length > 0 ? editSelectedProductIds : null;
-                
+
                 const customerData = {
                     company_name: document.getElementById('editCustomerCompanyName').value,
                     address: document.getElementById('editCustomerAddress').value || null,
@@ -2261,7 +2261,7 @@ async function editCustomer(id) {
                     product_ids: selectedProducts.length > 0 ? selectedProducts : null,
                     contacts: contactList.length > 0 ? contactList : null
                 };
-                
+
                 const response = await fetch(`${API_BASE}/customers/${customerId}`, {
                     method: 'PUT',
                     headers: {
@@ -2270,7 +2270,7 @@ async function editCustomer(id) {
                     },
                     body: JSON.stringify(customerData)
                 });
-                
+
                 if (response.ok) {
                     notifySuccess('Müşteri başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editCustomerModal')).hide();
@@ -2283,13 +2283,13 @@ async function editCustomer(id) {
                 notifyError(error.message);
             }
         };
-        
+
         modalElement.show();
     } catch (error) {
         notifyError(error.message);
     }
 }
-function deleteCustomer(id) { 
+function deleteCustomer(id) {
     if (confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')) {
         fetch(`${API_BASE}/customers/${id}`, {
             method: 'DELETE',
@@ -2299,19 +2299,23 @@ function deleteCustomer(id) {
 }
 
 // View customer detail with tabs
-async function viewCustomerDetail(id) {
+window.viewCustomerDetail = async function (id) {
     try {
         const response = await fetch(`${API_BASE}/customers/${id}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (!response.ok) {
             notifyError('Müşteri bilgileri yüklenemedi');
             return;
         }
-        
+
         const customer = await response.json();
-        
+
+        // Debug: Log customer data
+        console.log('Customer data from API:', customer);
+        console.log('Customer products:', customer.products);
+
         // Load related data
         const [casesResponse, productsResponse] = await Promise.all([
             fetch(`${API_BASE}/cases?customer_id=${id}`, {
@@ -2321,16 +2325,33 @@ async function viewCustomerDetail(id) {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             }).catch(() => ({ ok: false }))
         ]);
-        
+
         const cases = casesResponse.ok ? await casesResponse.json() : [];
         const allProducts = productsResponse.ok ? await productsResponse.json() : [];
-        
+
         const customerProducts = customer.products || [];
-        const productNames = customerProducts.map(cp => {
-            const product = allProducts.find(p => p.id === cp.id);
-            return product ? product.name : 'Bilinmeyen Ürün';
-        });
-        
+        console.log('customerProducts array:', customerProducts);
+        console.log('customerProducts length:', customerProducts.length);
+
+        // Map customer products with full product details
+        // API already returns full product details, so we can use them directly
+        const customerProductsWithDetails = customerProducts.map(cp => {
+            // cp is already a product object from API with id, name, code, category, brand
+            console.log('Processing product:', cp);
+            return {
+                id: cp.id,
+                name: cp.name,
+                code: cp.code || null,
+                category: cp.category || null,
+                brand: cp.brand || null
+            };
+        }).filter(p => p !== null);
+
+        console.log('customerProductsWithDetails:', customerProductsWithDetails);
+        console.log('customerProductsWithDetails length:', customerProductsWithDetails.length);
+
+        // Products will be rendered after modal is shown
+
         const modalHTML = `
             <div class="modal fade" id="customerDetailModal" tabindex="-1">
                 <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -2345,27 +2366,27 @@ async function viewCustomerDetail(id) {
                             <!-- Tabs Navigation -->
                             <ul class="nav nav-tabs border-bottom" id="customerDetailTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                                    <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#customer-detail-info" type="button" role="tab">
                                         <i class="fas fa-info-circle"></i> Detaylar
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab">
+                                    <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#customer-detail-notes" type="button" role="tab">
                                         <i class="fas fa-sticky-note"></i> Notlar
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">
+                                    <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#customer-detail-products" type="button" role="tab">
                                         <i class="fas fa-box"></i> Ürünler
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button" role="tab">
+                                    <button class="nav-link" id="files-tab" data-bs-toggle="tab" data-bs-target="#customer-detail-files" type="button" role="tab">
                                         <i class="fas fa-file"></i> Dosyalar
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+                                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#customer-detail-history" type="button" role="tab">
                                         <i class="fas fa-history"></i> Geçmiş
                                     </button>
                                 </li>
@@ -2374,7 +2395,7 @@ async function viewCustomerDetail(id) {
                             <!-- Tab Content -->
                             <div class="tab-content p-4" id="customerDetailTabContent">
                                 <!-- Detaylar Tab -->
-                                <div class="tab-pane fade show active" id="details" role="tabpanel">
+                                <div class="tab-pane fade show active" id="customer-detail-info" role="tabpanel">
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <div class="card h-100">
@@ -2445,7 +2466,7 @@ async function viewCustomerDetail(id) {
                                 </div>
                                 
                                 <!-- Notlar Tab -->
-                                <div class="tab-pane fade" id="notes" role="tabpanel">
+                                <div class="tab-pane fade" id="customer-detail-notes" role="tabpanel">
                                     <div class="card">
                                         <div class="card-body">
                                             <h6 class="card-title mb-3">Müşteri Notları</h6>
@@ -2457,23 +2478,26 @@ async function viewCustomerDetail(id) {
                                 </div>
                                 
                                 <!-- Ürünler Tab -->
-                                <div class="tab-pane fade" id="products" role="tabpanel">
+                                <div class="tab-pane fade" id="customer-detail-products" role="tabpanel">
                                     <div class="card">
                                         <div class="card-body">
-                                            <h6 class="card-title mb-3">Firma Ürünleri</h6>
-                                            ${productNames.length > 0 ? `
-                                                <div class="d-flex flex-wrap gap-2">
-                                                    ${productNames.map(name => `
-                                                        <span class="badge bg-success fs-6">${name}</span>
-                                                    `).join('')}
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="card-title mb-0">Firma Ürünleri</h6>
+                                                <button type="button" class="btn btn-sm btn-primary" onclick="window.showAddProductToCustomerModal(${id})">
+                                                    <i class="fas fa-plus"></i> Yeni Ürün Ekle
+                                                </button>
+                                            </div>
+                                            <div id="productsTabContent">
+                                                <div id="productsTableContainer">
+                                                    <!-- Products will be rendered here -->
                                                 </div>
-                                            ` : '<p class="text-muted mb-0">Henüz ürün atanmamış</p>'}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Dosyalar Tab -->
-                                <div class="tab-pane fade" id="files" role="tabpanel">
+                                <div class="tab-pane fade" id="customer-detail-files" role="tabpanel">
                                     <div class="card">
                                         <div class="card-body">
                                             <h6 class="card-title mb-3">Müşteri Dosyaları</h6>
@@ -2483,7 +2507,7 @@ async function viewCustomerDetail(id) {
                                 </div>
                                 
                                 <!-- Geçmiş Tab -->
-                                <div class="tab-pane fade" id="history" role="tabpanel">
+                                <div class="tab-pane fade" id="customer-detail-history" role="tabpanel">
                                     <div class="card">
                                         <div class="card-body">
                                             <h6 class="card-title mb-3">Destek Talepleri Geçmişi</h6>
@@ -2528,24 +2552,323 @@ async function viewCustomerDetail(id) {
                 </div>
             </div>
         `;
-        
+
         // Remove existing modal if any
         const existingModal = document.getElementById('customerDetailModal');
         if (existingModal) {
             existingModal.remove();
         }
-        
+
         // Add modal to page
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
+
         // Initialize modal
         const modalElement = new bootstrap.Modal(document.getElementById('customerDetailModal'));
         modalElement.show();
+
+        // Render products table immediately
+        renderCustomerProductsTable(customerProductsWithDetails, id);
+
+        // Add event listener for tab change to ensure table is rendered correctly
+        const productsTab = document.getElementById('products-tab');
+        if (productsTab) {
+            productsTab.addEventListener('shown.bs.tab', function (e) {
+                console.log('Products tab shown, re-rendering table...');
+                renderCustomerProductsTable(customerProductsWithDetails, id);
+            });
+        }
+
+        // Store customer and products data globally for use in modal functions
+        window.currentCustomerDetail = { id, customer, allProducts, customerProducts: customerProductsWithDetails };
     } catch (error) {
         console.error('Error loading customer detail:', error);
         notifyError('Müşteri detayları yüklenirken hata oluştu: ' + error.message);
     }
 }
+
+// Render customer products table
+function renderCustomerProductsTable(products, customerId) {
+    console.log('renderCustomerProductsTable called with', products ? products.length : 0, 'products');
+
+    const container = document.getElementById('productsTableContainer');
+    if (!container) {
+        console.error('productsTableContainer element not found in DOM');
+        return;
+    }
+
+    if (!products || products.length === 0) {
+        container.innerHTML = '<p class="text-muted mb-0">Henüz ürün atanmamış</p>';
+        return;
+    }
+
+    // Use simple string concatenation for rows to avoid template literal issues
+    let rowsHTML = '';
+    for (let i = 0; i < products.length; i++) {
+        const product = products[i];
+        const categoryName = (product.category && product.category.name) ? product.category.name : 'Kategori Yok';
+        const brandName = (product.brand && product.brand.name) ? product.brand.name : 'Marka Yok';
+        const productName = product.name || 'N/A';
+        const productCode = product.code || '-';
+
+        rowsHTML += '<tr id="productRow_' + product.id + '">';
+        rowsHTML += '<td>' + escapeHtml(productName) + '</td>';
+        rowsHTML += '<td><span class="badge bg-info">' + escapeHtml(categoryName) + '</span></td>';
+        rowsHTML += '<td><span class="badge bg-secondary">' + escapeHtml(brandName) + '</span></td>';
+        rowsHTML += '<td>' + escapeHtml(productCode) + '</td>';
+        rowsHTML += '<td class="text-end">';
+        rowsHTML += '<button type="button" class="btn btn-sm btn-danger" onclick="window.removeProductFromCustomer(' + customerId + ', ' + product.id + ')" title="Ürünü Kaldır">';
+        rowsHTML += '<i class="fas fa-trash"></i>';
+        rowsHTML += '</button>';
+        rowsHTML += '</td>';
+        rowsHTML += '</tr>';
+    }
+
+    const tableHTML = '<div class="table-responsive">' +
+        '<table class="table table-sm table-hover">' +
+        '<thead>' +
+        '<tr>' +
+        '<th>Ürün Adı</th>' +
+        '<th>Kategori</th>' +
+        '<th>Marka</th>' +
+        '<th>Ürün Kodu</th>' +
+        '<th class="text-end">İşlemler</th>' +
+        '</tr>' +
+        '</thead>' +
+        '<tbody id="customerProductsTableBody">' +
+        rowsHTML +
+        '</tbody>' +
+        '</table>' +
+        '</div>';
+
+    container.innerHTML = tableHTML;
+    console.log('Products table rendered successfully');
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.toString().replace(/[&<>"']/g, m => map[m]);
+}
+
+// Show modal to add product to customer
+window.showAddProductToCustomerModal = async function (customerId) {
+    try {
+        if (!window.currentCustomerDetail || window.currentCustomerDetail.id !== customerId) {
+            // Reload customer data if not available
+            const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!response.ok) {
+                notifyError('Müşteri bilgileri yüklenemedi');
+                return;
+            }
+            const customer = await response.json();
+            const productsResponse = await fetch(`${API_BASE}/products`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            const allProducts = productsResponse.ok ? await productsResponse.json() : [];
+            window.currentCustomerDetail = { id: customerId, customer, allProducts, customerProducts: customer.products || [] };
+        }
+
+        const { customer, allProducts } = window.currentCustomerDetail;
+        const assignedProductIds = customer.products ? customer.products.map(cp => cp.id) : [];
+        const availableProducts = allProducts.filter(p => p.is_active !== 0 && !assignedProductIds.includes(p.id));
+
+        if (availableProducts.length === 0) {
+            notifyWarning('Eklenebilecek ürün bulunmuyor. Tüm ürünler zaten atanmış veya aktif ürün yok.');
+            return;
+        }
+
+        const modalHTML = `
+            <div class="modal fade" id="addProductToCustomerModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-box"></i> Müşteriye Ürün Ekle
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addProductToCustomerForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Ürün Seçin <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="productToAddSelect" required>
+                                        <option value="">Ürün seçiniz...</option>
+                                        ${availableProducts.map(p => `
+                                            <option value="${p.id}">${p.name}${p.category ? ' - ' + p.category.name : ''}${p.brand ? ' (' + p.brand.name + ')' : ''}</option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                            <button type="button" class="btn btn-primary" onclick="addProductToCustomer(${customerId})">Ekle</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove existing modal if any
+        const existingModal = document.getElementById('addProductToCustomerModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Add modal to page
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Initialize modal
+        const modalElement = new bootstrap.Modal(document.getElementById('addProductToCustomerModal'));
+        modalElement.show();
+    } catch (error) {
+        console.error('Error showing add product modal:', error);
+        notifyError('Ürün ekleme modal\'ı açılırken hata oluştu: ' + error.message);
+    }
+}
+
+// Add product to customer
+window.addProductToCustomer = async function (customerId) {
+    try {
+        const productId = document.getElementById('productToAddSelect').value;
+        if (!productId) {
+            notifyWarning('Lütfen bir ürün seçin');
+            return;
+        }
+
+        // Get current customer data
+        const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!response.ok) {
+            notifyError('Müşteri bilgileri yüklenemedi');
+            return;
+        }
+        const customer = await response.json();
+
+        // Get current product IDs and add new one
+        const currentProductIds = customer.products ? customer.products.map(p => p.id) : [];
+        if (currentProductIds.includes(parseInt(productId))) {
+            notifyWarning('Bu ürün zaten müşteriye atanmış');
+            return;
+        }
+
+        const updatedProductIds = [...currentProductIds, parseInt(productId)];
+
+        // Update customer with new product
+        const updateResponse = await fetch(`${API_BASE}/customers/${customerId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_ids: updatedProductIds
+            })
+        });
+
+        if (!updateResponse.ok) {
+            const errorData = await updateResponse.json();
+            throw new Error(errorData.detail || 'Ürün eklenirken hata oluştu');
+        }
+
+        notifySuccess('Ürün başarıyla eklendi');
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addProductToCustomerModal'));
+        if (modal) modal.hide();
+
+        // Refresh customer detail modal - reload the page data
+        const detailModal = document.getElementById('customerDetailModal');
+        if (detailModal) {
+            const modalInstance = bootstrap.Modal.getInstance(detailModal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            // Reload customer detail after a short delay
+            setTimeout(() => {
+                window.viewCustomerDetail(customerId);
+            }, 300);
+        } else {
+            // If modal is not open, just reload
+            window.viewCustomerDetail(customerId);
+        }
+    } catch (error) {
+        console.error('Error adding product to customer:', error);
+        notifyError('Ürün eklenirken hata oluştu: ' + error.message);
+    }
+}
+
+// Remove product from customer
+window.removeProductFromCustomer = async function (customerId, productId) {
+    try {
+        if (!confirm('Bu ürünü müşteriden kaldırmak istediğinize emin misiniz?')) {
+            return;
+        }
+
+        // Get current customer data
+        const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!response.ok) {
+            notifyError('Müşteri bilgileri yüklenemedi');
+            return;
+        }
+        const customer = await response.json();
+
+        // Get current product IDs and remove the one
+        const currentProductIds = customer.products ? customer.products.map(p => p.id) : [];
+        const updatedProductIds = currentProductIds.filter(id => id !== productId);
+
+        // Update customer without the product
+        const updateResponse = await fetch(`${API_BASE}/customers/${customerId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_ids: updatedProductIds
+            })
+        });
+
+        if (!updateResponse.ok) {
+            const errorData = await updateResponse.json();
+            throw new Error(errorData.detail || 'Ürün kaldırılırken hata oluştu');
+        }
+
+        notifySuccess('Ürün başarıyla kaldırıldı');
+
+        // Refresh customer detail modal - reload the page data
+        const detailModal = document.getElementById('customerDetailModal');
+        if (detailModal) {
+            const modalInstance = bootstrap.Modal.getInstance(detailModal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            // Reload customer detail after a short delay
+            setTimeout(() => {
+                window.viewCustomerDetail(customerId);
+            }, 300);
+        } else {
+            // If modal is not open, just reload
+            window.viewCustomerDetail(customerId);
+        }
+    } catch (error) {
+        console.error('Error removing product from customer:', error);
+        notifyError('Ürün kaldırılırken hata oluştu: ' + error.message);
+    }
+}
+
 async function editProduct(id) {
     try {
         // Load product, categories and brands
@@ -2560,30 +2883,30 @@ async function editProduct(id) {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             })
         ]);
-        
+
         if (!productResponse.ok) throw new Error('Ürün verileri yüklenemedi');
-        
+
         const product = await productResponse.json();
         let categories = [];
         let brands = [];
-        
+
         if (categoriesResponse.ok) {
             categories = await categoriesResponse.json();
         }
         if (brandsResponse.ok) {
             brands = await brandsResponse.json();
         }
-        
+
         const categoryOptions = categories
             .filter(cat => cat.is_active === 1)
             .map(cat => `<option value="${cat.id}" ${product.category_id === cat.id ? 'selected' : ''}>${cat.name}</option>`)
             .join('');
-        
+
         const brandOptions = brands
             .filter(brand => brand.is_active === 1)
             .map(brand => `<option value="${brand.id}" ${product.brand_id === brand.id ? 'selected' : ''}>${brand.name}</option>`)
             .join('');
-        
+
         const modal = createModal('editProductModal', 'Ürün Düzenle', `
             <form id="editProductForm">
                 <div class="mb-3">
@@ -2626,7 +2949,7 @@ async function editProduct(id) {
         `, async () => {
             const categorySelect = document.getElementById('editProductCategory');
             const brandSelect = document.getElementById('editProductBrand');
-            
+
             const productData = {
                 name: document.getElementById('editProductName').value.trim(),
                 code: document.getElementById('editProductCode').value.trim() || null,
@@ -2634,22 +2957,22 @@ async function editProduct(id) {
                 brand_id: brandSelect.value ? parseInt(brandSelect.value) : null,
                 description: document.getElementById('editProductDescription').value.trim() || null
             };
-            
+
             if (!productData.name) {
                 notifyError('Ürün adı zorunludur!');
                 return;
             }
-            
+
             if (!productData.category_id) {
                 notifyError('Ürün kategorisi seçilmelidir!');
                 return;
             }
-            
+
             if (!productData.brand_id) {
                 notifyError('Ürün markası seçilmelidir!');
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_BASE}/products/${id}`, {
                     method: 'PUT',
@@ -2659,7 +2982,7 @@ async function editProduct(id) {
                     },
                     body: JSON.stringify(productData)
                 });
-                
+
                 if (response.ok) {
                     notifySuccess('Ürün başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
@@ -2672,14 +2995,14 @@ async function editProduct(id) {
                 notifyError('Bağlantı hatası: ' + error.message);
             }
         });
-        
+
         const modalElement = new bootstrap.Modal(document.getElementById('editProductModal'));
         modalElement.show();
     } catch (error) {
         notifyError(error.message);
     }
 }
-function deleteProduct(id) { 
+function deleteProduct(id) {
     if (confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
         fetch(`${API_BASE}/products/${id}`, {
             method: 'DELETE',
@@ -2692,13 +3015,13 @@ async function editDepartment(id) {
         const response = await fetch(`${API_BASE}/users/departments`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (!response.ok) throw new Error('Departman verileri yüklenemedi');
-        
+
         const departments = await response.json();
         const dept = departments.find(d => d.id === id);
         if (!dept) throw new Error('Departman bulunamadı');
-        
+
         const modal = createModal('editDepartmentModal', 'Departman Düzenle', `
             <form id="editDepartmentForm" class="modal-form">
                 <div class="form-grid">
@@ -2723,7 +3046,7 @@ async function editDepartment(id) {
                 name: document.getElementById('editDepartmentName').value,
                 description: document.getElementById('editDepartmentDescription').value || null
             };
-            
+
             try {
                 const response = await fetch(`${API_BASE}/users/departments/${id}`, {
                     method: 'PUT',
@@ -2733,7 +3056,7 @@ async function editDepartment(id) {
                     },
                     body: JSON.stringify(deptData)
                 });
-                
+
                 if (response.ok) {
                     notifySuccess('Departman başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editDepartmentModal')).hide();
@@ -2746,7 +3069,7 @@ async function editDepartment(id) {
                 notifyError(error.message);
             }
         });
-        
+
         const modalElement = new bootstrap.Modal(document.getElementById('editDepartmentModal'));
         modalElement.show();
     } catch (error) {
@@ -2761,7 +3084,7 @@ async function deleteDepartment(id) {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
-            
+
             if (response.ok) {
                 notifySuccess('Departman başarıyla silindi!');
                 loadDepartments();
@@ -2780,13 +3103,13 @@ async function editRole(id) {
         const response = await fetch(`${API_BASE}/users/roles`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
-        
+
         if (!response.ok) throw new Error('Rol verileri yüklenemedi');
-        
+
         const roles = await response.json();
         const role = roles.find(r => r.id === id);
         if (!role) throw new Error('Rol bulunamadı');
-        
+
         const modal = createModal('editRoleModal', 'Rol Düzenle', `
             <form id="editRoleForm" class="modal-form">
                 <div class="form-grid">
@@ -2811,7 +3134,7 @@ async function editRole(id) {
                 name: document.getElementById('editRoleName').value,
                 description: document.getElementById('editRoleDescription').value || null
             };
-            
+
             try {
                 const response = await fetch(`${API_BASE}/users/roles/${id}`, {
                     method: 'PUT',
@@ -2821,7 +3144,7 @@ async function editRole(id) {
                     },
                     body: JSON.stringify(roleData)
                 });
-                
+
                 if (response.ok) {
                     notifySuccess('Rol başarıyla güncellendi!');
                     bootstrap.Modal.getInstance(document.getElementById('editRoleModal')).hide();
@@ -2834,7 +3157,7 @@ async function editRole(id) {
                 notifyError(error.message);
             }
         });
-        
+
         const modalElement = new bootstrap.Modal(document.getElementById('editRoleModal'));
         modalElement.show();
     } catch (error) {
@@ -2849,7 +3172,7 @@ async function deleteRole(id) {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
-            
+
             if (response.ok) {
                 notifySuccess('Rol başarıyla silindi!');
                 loadRoles();
@@ -2872,18 +3195,20 @@ let allUsers = [];
 let supportTypes = [];
 let supportStatuses = [];
 let priorityTypes = [];
+let allDepartments = [];
 let selectedStaffIds = new Set(); // For tag-based staff selection
 
 async function loadCaseData() {
     try {
-        [customers, products, supportStaff, allUsers, supportTypes, supportStatuses, priorityTypes] = await Promise.all([
+        [customers, products, supportStaff, allUsers, supportTypes, supportStatuses, priorityTypes, allDepartments] = await Promise.all([
             fetch(`${API_BASE}/customers`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
             fetch(`${API_BASE}/products`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
             fetch(`${API_BASE}/users/support-staff`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
             fetch(`${API_BASE}/users`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
             fetch(`${API_BASE}/support-types`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
             fetch(`${API_BASE}/support-statuses`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
-            fetch(`${API_BASE}/priority-types`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : [])
+            fetch(`${API_BASE}/priority-types`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE}/users/departments`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.ok ? r.json() : [])
         ]);
     } catch (error) {
         console.error('Error loading case data:', error);
@@ -2892,16 +3217,16 @@ async function loadCaseData() {
 
 async function showAddCaseModal() {
     await loadCaseData();
-    
+
     // Get current user info
     const currentUserInfo = await fetch(`${API_BASE}/users/me`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
     }).then(r => r.ok ? r.json() : null).catch(() => null);
-    
+
     // Set default request date (now)
     const now = new Date();
     const requestDateStr = now.toISOString().slice(0, 16);
-    
+
     const modalHTML = `
         <div class="modal fade" id="addCaseModal" tabindex="-1">
             <div class="modal-dialog modal-fullscreen-lg-down" style="max-width: 95vw;">
@@ -2927,14 +3252,13 @@ async function showAddCaseModal() {
                                     <label class="form-label small">Müşteri <span class="text-danger">*</span></label>
                                     <select class="form-select form-select-sm" id="caseCustomer" required>
                                         <option value="">Müşteri Seçin</option>
-                                        ${customers.filter(c => c.is_active !== 0).map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                                        ${customers.filter(c => c.is_active !== 0).map(c => `<option value="${c.id}">${c.company_name || c.name}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label small">Ürün</label>
-                                    <select class="form-select form-select-sm" id="caseProduct">
-                                        <option value="">Ürün Seçin</option>
-                                        ${products.filter(p => p.is_active !== 0).map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+                                    <select class="form-select form-select-sm" id="caseProduct" disabled>
+                                        <option value="">Önce Müşteri Seçin</option>
                                     </select>
                                 </div>
                             </div>
@@ -2948,7 +3272,10 @@ async function showAddCaseModal() {
                                 </div>
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label small">Departman</label>
-                                    <input type="text" class="form-control form-control-sm" id="caseDepartment" readonly>
+                                    <select class="form-select form-select-sm" id="caseDepartment">
+                                        <option value="">Departman Seçin</option>
+                                        ${allDepartments.filter(d => d.is_active !== 0).map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+                                    </select>
                                 </div>
                                 <div class="col-md-4 mb-2">
                                     <label class="form-label small">Ticket Türü <span class="text-danger">*</span></label>
@@ -3031,53 +3358,97 @@ async function showAddCaseModal() {
             </div>
         </div>
     `;
-    
+
     // Remove existing modal if any
     const existingModal = document.getElementById('addCaseModal');
     if (existingModal) {
         existingModal.remove();
     }
-    
+
     // Add modal to page
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
+
     // Initialize modal
     const modalElement = new bootstrap.Modal(document.getElementById('addCaseModal'));
-    
+
     // Set up event listeners
-    const assignedToSelect = document.getElementById('caseAssignedTo');
-    if (assignedToSelect) {
-        assignedToSelect.addEventListener('change', function() {
-            const userId = this.value;
-            const selectedOption = this.options[this.selectedIndex];
-            const deptInput = document.getElementById('caseDepartment');
-            
-            if (userId && selectedOption) {
-                // Get department from data attribute or find user in allUsers
-                let deptName = selectedOption.getAttribute('data-dept');
-                if (!deptName) {
-                    const user = allUsers.find(u => u.id === parseInt(userId));
-                    deptName = user?.department?.name || '';
+    const customerSelect = document.getElementById('caseCustomer');
+    const productSelect = document.getElementById('caseProduct');
+
+    if (customerSelect && productSelect) {
+        customerSelect.addEventListener('change', async function () {
+            const customerId = this.value;
+
+            // Reset product select
+            productSelect.innerHTML = '<option value="">Ürün Seçin</option>';
+            productSelect.disabled = true;
+
+            if (!customerId) {
+                productSelect.innerHTML = '<option value="">Önce Müşteri Seçin</option>';
+                return;
+            }
+
+            try {
+                productSelect.innerHTML = '<option value="">Yükleniyor...</option>';
+
+                const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const customer = await response.json();
+                    const customerProducts = customer.products || [];
+
+                    if (customerProducts.length > 0) {
+                        productSelect.innerHTML = '<option value="">Ürün Seçin</option>' +
+                            customerProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                        productSelect.disabled = false;
+                    } else {
+                        productSelect.innerHTML = '<option value="">Müşteriye ait ürün bulunamadı</option>';
+                    }
+                } else {
+                    console.error('Failed to fetch customer details');
+                    productSelect.innerHTML = '<option value="">Hata oluştu</option>';
                 }
-                if (deptInput) {
-                    deptInput.value = deptName;
-                }
-            } else if (deptInput) {
-                deptInput.value = '';
+            } catch (error) {
+                console.error('Error fetching customer products:', error);
+                productSelect.innerHTML = '<option value="">Hata oluştu</option>';
             }
         });
-        
+    }
+
+    const assignedToSelect = document.getElementById('caseAssignedTo');
+    if (assignedToSelect) {
+        assignedToSelect.addEventListener('change', function () {
+            const userId = this.value;
+            const selectedOption = this.options[this.selectedIndex];
+            const deptSelect = document.getElementById('caseDepartment');
+
+            if (userId && selectedOption && deptSelect) {
+                // Get department from user and auto-select it in dropdown
+                const user = allUsers.find(u => u.id === parseInt(userId));
+                if (user && user.department && user.department.id) {
+                    deptSelect.value = user.department.id;
+                } else {
+                    deptSelect.value = '';
+                }
+            } else if (deptSelect) {
+                deptSelect.value = '';
+
+            }
+        });
+
         // Trigger change if default user is selected
         if (currentUserInfo) {
             assignedToSelect.dispatchEvent(new Event('change'));
         }
     }
-    
+
     // Calculate time spent when start/end dates change
     const startDateInput = document.getElementById('caseStartDate');
     const endDateInput = document.getElementById('caseEndDate');
     const timeSpentInput = document.getElementById('caseTimeSpent');
-    
+
     function calculateTimeSpent() {
         if (startDateInput && endDateInput && timeSpentInput && startDateInput.value && endDateInput.value) {
             const start = new Date(startDateInput.value);
@@ -3088,24 +3459,24 @@ async function showAddCaseModal() {
             timeSpentInput.value = '';
         }
     }
-    
+
     if (startDateInput) startDateInput.addEventListener('change', calculateTimeSpent);
     if (endDateInput) endDateInput.addEventListener('change', calculateTimeSpent);
-    
+
     // Handle image paste in textareas
     const descriptionTextarea = document.getElementById('caseDescription');
     const solutionTextarea = document.getElementById('caseSolution');
-    
+
     [descriptionTextarea, solutionTextarea].forEach(textarea => {
         if (textarea) {
-            textarea.addEventListener('paste', async function(e) {
+            textarea.addEventListener('paste', async function (e) {
                 const items = e.clipboardData.items;
                 for (let item of items) {
                     if (item.type.indexOf('image') !== -1) {
                         e.preventDefault();
                         const blob = item.getBlob();
                         const reader = new FileReader();
-                        reader.onload = function(event) {
+                        reader.onload = function (event) {
                             const img = document.createElement('img');
                             img.src = event.target.result;
                             img.style.maxWidth = '100%';
@@ -3121,19 +3492,19 @@ async function showAddCaseModal() {
             });
         }
     });
-    
+
     // Handle support staff tag-based selection
     selectedStaffIds.clear(); // Reset when modal opens
     const staffSearchInput = document.getElementById('staffSearchInput');
     const staffDropdown = document.getElementById('staffDropdown');
     const selectedStaffTags = document.getElementById('selectedStaffTags');
-    
+
     function renderSelectedTags() {
         if (selectedStaffIds.size === 0) {
             selectedStaffTags.innerHTML = '<span class="text-muted" style="font-size: 0.875rem;">Henüz kullanıcı seçilmedi</span>';
             return;
         }
-        
+
         selectedStaffTags.innerHTML = Array.from(selectedStaffIds).map(userId => {
             const user = allUsers.find(u => u.id === parseInt(userId));
             if (!user) return '';
@@ -3145,22 +3516,22 @@ async function showAddCaseModal() {
             `;
         }).join('');
     }
-    
+
     function filterStaff(searchTerm) {
         const term = searchTerm.toLowerCase().trim();
         if (!term) {
             staffDropdown.style.display = 'none';
             return;
         }
-        
-        const filtered = allUsers.filter(u => 
-            u.is_active === 1 && 
+
+        const filtered = allUsers.filter(u =>
+            u.is_active === 1 &&
             !selectedStaffIds.has(u.id) &&
-            (u.full_name.toLowerCase().includes(term) || 
-             (u.department && u.department.name.toLowerCase().includes(term)) ||
-             (u.email && u.email.toLowerCase().includes(term)))
+            (u.full_name.toLowerCase().includes(term) ||
+                (u.department && u.department.name.toLowerCase().includes(term)) ||
+                (u.email && u.email.toLowerCase().includes(term)))
         );
-        
+
         if (filtered.length === 0) {
             staffDropdown.innerHTML = '<div class="staff-dropdown-empty">Kullanıcı bulunamadı</div>';
         } else {
@@ -3174,12 +3545,12 @@ async function showAddCaseModal() {
                 </div>
             `).join('');
         }
-        
+
         staffDropdown.style.display = 'block';
     }
-    
+
     // Make functions available globally for onclick handlers
-    window.selectStaff = function(userId) {
+    window.selectStaff = function (userId) {
         selectedStaffIds.add(userId);
         renderSelectedTags();
         const input = document.getElementById('staffSearchInput');
@@ -3190,34 +3561,66 @@ async function showAddCaseModal() {
             input.focus();
         }
     };
-    
-    window.removeStaffTag = function(userId) {
+
+    window.removeStaffTag = function (userId) {
         selectedStaffIds.delete(userId);
         renderSelectedTags();
     };
-    
+
     if (staffSearchInput) {
-        staffSearchInput.addEventListener('input', function(e) {
+        staffSearchInput.addEventListener('input', function (e) {
             filterStaff(e.target.value);
         });
-        
-        staffSearchInput.addEventListener('focus', function() {
+
+        staffSearchInput.addEventListener('focus', function () {
             if (this.value.trim()) {
                 filterStaff(this.value);
             }
         });
-        
+
         // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (!staffSearchInput.contains(e.target) && !staffDropdown.contains(e.target)) {
                 staffDropdown.style.display = 'none';
             }
         });
     }
-    
+
     // Initialize
     renderSelectedTags();
-    
+
+    // Set default values for status and priority
+    const statusSelect = document.getElementById('caseStatus');
+    const prioritySelect = document.getElementById('casePriority');
+
+    // Find and select "Yeni" status (or first active status if "Yeni" not found)
+    if (statusSelect && supportStatuses.length > 0) {
+        const yeniStatus = supportStatuses.find(s => s.is_active === 1 && s.name.toLowerCase().includes('yeni'));
+        if (yeniStatus) {
+            statusSelect.value = yeniStatus.id;
+        } else {
+            // Fallback to first active status
+            const firstActiveStatus = supportStatuses.find(s => s.is_active === 1);
+            if (firstActiveStatus) {
+                statusSelect.value = firstActiveStatus.id;
+            }
+        }
+    }
+
+    // Find and select "Orta" priority (or first active priority if "Orta" not found)
+    if (prioritySelect && priorityTypes.length > 0) {
+        const ortaPriority = priorityTypes.find(p => p.is_active === 1 && p.name.toLowerCase().includes('orta'));
+        if (ortaPriority) {
+            prioritySelect.value = ortaPriority.id;
+        } else {
+            // Fallback to first active priority
+            const firstActivePriority = priorityTypes.find(p => p.is_active === 1);
+            if (firstActivePriority) {
+                prioritySelect.value = firstActivePriority.id;
+            }
+        }
+    }
+
     modalElement.show();
 }
 
@@ -3227,34 +3630,51 @@ async function saveCase() {
         form.reportValidity();
         return;
     }
-    
+
     try {
+        // Validate required fields
+        const customerId = document.getElementById('caseCustomer').value;
+        const priorityId = document.getElementById('casePriority').value;
+        const supportTypeId = document.getElementById('caseSupportType').value;
+        const statusId = document.getElementById('caseStatus').value;
+
+        if (!customerId) {
+            notifyWarning('Lütfen müşteri seçin');
+            return;
+        }
+        if (!priorityId) {
+            notifyWarning('Lütfen öncelik seçin');
+            return;
+        }
+        if (!supportTypeId) {
+            notifyWarning('Lütfen ticket türü seçin');
+            return;
+        }
+        if (!statusId) {
+            notifyWarning('Lütfen durum seçin');
+            return;
+        }
+
         const caseData = {
             title: document.getElementById('caseTitle').value || 'Destek Talebi',
             description: document.getElementById('caseDescription').value,
             request_date: document.getElementById('caseRequestDate').value,
-            customer_id: parseInt(document.getElementById('caseCustomer').value),
+            customer_id: parseInt(customerId),
             product_id: document.getElementById('caseProduct').value ? parseInt(document.getElementById('caseProduct').value) : null,
             assigned_to: document.getElementById('caseAssignedTo').value ? parseInt(document.getElementById('caseAssignedTo').value) : null,
-            department_id: null, // Will be set from assigned user
-            priority_type_id: parseInt(document.getElementById('casePriority').value),
-            support_type_id: parseInt(document.getElementById('caseSupportType').value),
-            status_id: parseInt(document.getElementById('caseStatus').value),
+            department_id: document.getElementById('caseDepartment').value ? parseInt(document.getElementById('caseDepartment').value) : null,
+            priority_type_id: parseInt(priorityId),
+            support_type_id: parseInt(supportTypeId),
+            status_id: parseInt(statusId),
             solution: document.getElementById('caseSolution').value || null,
             start_date: document.getElementById('caseStartDate').value || null,
             end_date: document.getElementById('caseEndDate').value || null,
             time_spent_minutes: document.getElementById('caseTimeSpent').value ? parseInt(document.getElementById('caseTimeSpent').value) : null,
             assigned_user_ids: Array.from(selectedStaffIds).map(id => parseInt(id))
         };
-        
-        // Get department from assigned user
-        if (caseData.assigned_to) {
-            const user = allUsers.find(u => u.id === caseData.assigned_to);
-            if (user && user.department) {
-                caseData.department_id = user.department.id;
-            }
-        }
-        
+
+        console.log('Sending case data:', caseData);
+
         const response = await fetch(`${API_BASE}/cases`, {
             method: 'POST',
             headers: {
@@ -3263,10 +3683,12 @@ async function saveCase() {
             },
             body: JSON.stringify(caseData)
         });
-        
+
+        console.log('Response status:', response.status);
+
         if (response.ok) {
             const result = await response.json();
-            
+
             // Upload files if any
             const filesInput = document.getElementById('caseFiles');
             if (filesInput && filesInput.files.length > 0) {
@@ -3280,16 +3702,18 @@ async function saveCase() {
                     });
                 }
             }
-            
+
             notifySuccess('Destek talebi başarıyla oluşturuldu!');
             bootstrap.Modal.getInstance(document.getElementById('addCaseModal')).hide();
             loadAllCases();
         } else {
-            const error = await response.json();
+            const error = await response.json().catch(() => ({ detail: 'Sunucudan yanıt alınamadı' }));
+            console.error('API Error:', error);
             notifyError(error.detail || 'Bilinmeyen hata');
         }
     } catch (error) {
-        notifyError(error.message);
+        console.error('Error saving case:', error);
+        notifyError('Hata: ' + error.message);
     }
 }
 

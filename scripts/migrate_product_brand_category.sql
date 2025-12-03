@@ -36,3 +36,5 @@ WHERE table_name = 'product_brands'
 AND column_name = 'category_id';
 
 
+
+
