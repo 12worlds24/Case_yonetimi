@@ -2032,7 +2032,7 @@
                         <td><span class="badge" style="background-color: ${statusColor}">${statusName}</span></td>
                         <td>${caseItem.title || 'N/A'}</td>
                         <td>${requestDate}</td>
-                        <td>${caseItem.customer?.name || 'N/A'}</td>
+                        <td>${caseItem.customer?.company_name || 'N/A'}</td>
                         <td>${supportTypeName}</td>
                         <td><span class="badge badge-${getPriorityBadgeClass(caseItem.priority_type?.name)}">${priorityName}</span></td>
                         <td>${assignedUsers}</td>

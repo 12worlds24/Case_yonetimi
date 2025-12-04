@@ -14,7 +14,6 @@ from app.utils.logger import get_logger
 from app.utils.retry import retry_database, retry_file_system
 from pathlib import Path
 import shutil
-import uuid
 
 logger = get_logger("api.cases")
 router = APIRouter(prefix="/api/cases", tags=["Cases"])
@@ -22,12 +21,39 @@ router = APIRouter(prefix="/api/cases", tags=["Cases"])
 UPLOAD_DIR = Path("uploads")
 
 
-def generate_ticket_number() -> str:
-    """Generate unique ticket number"""
-    # Format: TKT-YYYYMMDD-XXXXXX (e.g., TKT-20240101-A1B2C3)
-    date_str = datetime.now().strftime("%Y%m%d")
-    unique_str = str(uuid.uuid4())[:6].upper().replace("-", "")
-    return f"TKT-{date_str}-{unique_str}"
+def generate_ticket_number(db: Session) -> str:
+    """Generate unique sequential ticket number by year"""
+    # Format: 3D + YYYY + 001, 002, 003... (e.g., 3D2025001, 3D2025002)
+    # Resets to 001 each new year (e.g., 3D2026001)
+    current_year = datetime.now().year
+    prefix = f"3D{current_year}"
+    
+    # Find the highest ticket number for current year
+    # Pattern: 3D + YYYY + numbers
+    # Get all ticket numbers that start with the current year prefix
+    existing_tickets = db.query(Case.ticket_number).filter(
+        Case.ticket_number.like(f"{prefix}%")
+    ).all()
+    
+    max_number = 0
+    for ticket_tuple in existing_tickets:
+        ticket = ticket_tuple[0]
+        if ticket and ticket.startswith(prefix):
+            try:
+                # Extract the number part (after prefix)
+                number_part = ticket[len(prefix):]
+                if number_part.isdigit():
+                    num = int(number_part)
+                    if num > max_number:
+                        max_number = num
+            except (ValueError, IndexError):
+                continue
+    
+    # Generate next number
+    next_number = max_number + 1
+    ticket_number = f"{prefix}{next_number:03d}"
+    
+    return ticket_number
 
 
 @router.get("/", response_model=List[CaseResponse])
@@ -52,7 +78,10 @@ async def get_cases(
             joinedload(Case.department),
             joinedload(Case.priority_type),
             joinedload(Case.support_type),
-            joinedload(Case.status)
+            joinedload(Case.status),
+            joinedload(Case.assignments).joinedload(CaseAssignment.user),
+            joinedload(Case.comments).joinedload(CaseComment.user),
+            joinedload(Case.files)
         )
         
         if status_id:
@@ -65,10 +94,108 @@ async def get_cases(
             query = query.join(CaseAssignment).filter(CaseAssignment.user_id == current_user.id)
         
         cases = query.order_by(Case.request_date.desc(), Case.id.desc()).offset(skip).limit(limit).all()
-        return cases
+        
+        # Convert to dict format to avoid DetachedInstanceError
+        result = []
+        for case in cases:
+            case_dict = {
+                "id": case.id,
+                "ticket_number": case.ticket_number,
+                "title": case.title,
+                "description": case.description,
+                "request_date": case.request_date,
+                "customer_id": case.customer_id,
+                "customer_contact_id": case.customer_contact_id,
+                "product_id": case.product_id,
+                "created_by": case.created_by,
+                "assigned_to": case.assigned_to,
+                "department_id": case.department_id,
+                "priority_type_id": case.priority_type_id,
+                "support_type_id": case.support_type_id,
+                "status_id": case.status_id,
+                "solution": case.solution,
+                "start_date": case.start_date,
+                "end_date": case.end_date,
+                "time_spent_minutes": case.time_spent_minutes,
+                "custom_data": case.custom_data,
+                "created_at": case.created_at,
+                "updated_at": case.updated_at,
+                "customer": {
+                    "id": case.customer.id,
+                    "company_name": case.customer.company_name,
+                    "email": case.customer.email,
+                    "phone": getattr(case.customer, 'phone', None),
+                    "address": getattr(case.customer, 'address', None)
+                } if case.customer else None,
+                "product": {
+                    "id": case.product.id,
+                    "name": case.product.name,
+                    "code": case.product.code
+                } if case.product else None,
+                "creator": {
+                    "id": case.creator.id,
+                    "full_name": case.creator.full_name,
+                    "email": case.creator.email
+                } if case.creator else None,
+                "assigned_user": {
+                    "id": case.assigned_user.id,
+                    "full_name": case.assigned_user.full_name,
+                    "email": case.assigned_user.email
+                } if case.assigned_user else None,
+                "department": {
+                    "id": case.department.id,
+                    "name": case.department.name
+                } if case.department else None,
+                "priority_type": {
+                    "id": case.priority_type.id,
+                    "name": case.priority_type.name,
+                    "color": case.priority_type.color
+                } if case.priority_type else None,
+                "support_type": {
+                    "id": case.support_type.id,
+                    "name": case.support_type.name
+                } if case.support_type else None,
+                "status": {
+                    "id": case.status.id,
+                    "name": case.status.name,
+                    "color": case.status.color
+                } if case.status else None,
+                "assignments": [
+                    {
+                        "id": a.id,
+                        "user_id": a.user_id,
+                        "user": {
+                            "id": a.user.id,
+                            "full_name": a.user.full_name,
+                            "email": a.user.email
+                        } if a.user else None
+                    } for a in (case.assignments or [])
+                ],
+                "comments": [
+                    {
+                        "id": c.id,
+                        "comment": c.comment,
+                        "is_internal": c.is_internal,
+                        "user": {
+                            "id": c.user.id,
+                            "full_name": c.user.full_name
+                        } if c.user else None
+                    } for c in (case.comments or [])
+                ],
+                "files": [
+                    {
+                        "id": f.id,
+                        "filename": f.original_filename,
+                        "file_path": f.file_path
+                    } for f in (case.files or [])
+                ]
+            }
+            result.append(case_dict)
+        
+        return result
     except Exception as e:
         logger.exception(f"Error getting cases: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve cases")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to retrieve cases: {str(e)}")
 
 
 @router.get("/{case_id}", response_model=CaseResponse)
@@ -94,7 +221,101 @@ async def get_case(
     ).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Case not found")
-    return case
+    
+    # Convert to dict format to avoid DetachedInstanceError
+    case_dict = {
+        "id": case.id,
+        "ticket_number": case.ticket_number,
+        "title": case.title,
+        "description": case.description,
+        "request_date": case.request_date,
+        "customer_id": case.customer_id,
+        "customer_contact_id": case.customer_contact_id,
+        "product_id": case.product_id,
+        "created_by": case.created_by,
+        "assigned_to": case.assigned_to,
+        "department_id": case.department_id,
+        "priority_type_id": case.priority_type_id,
+        "support_type_id": case.support_type_id,
+        "status_id": case.status_id,
+        "solution": case.solution,
+        "start_date": case.start_date,
+        "end_date": case.end_date,
+        "time_spent_minutes": case.time_spent_minutes,
+        "custom_data": case.custom_data,
+        "created_at": case.created_at,
+        "updated_at": case.updated_at,
+        "customer": {
+            "id": case.customer.id,
+            "company_name": case.customer.company_name,
+            "email": case.customer.email,
+            "phone": getattr(case.customer, 'phone', None),
+            "address": getattr(case.customer, 'address', None)
+        } if case.customer else None,
+        "product": {
+            "id": case.product.id,
+            "name": case.product.name,
+            "code": case.product.code
+        } if case.product else None,
+        "creator": {
+            "id": case.creator.id,
+            "full_name": case.creator.full_name,
+            "email": case.creator.email
+        } if case.creator else None,
+        "assigned_user": {
+            "id": case.assigned_user.id,
+            "full_name": case.assigned_user.full_name,
+            "email": case.assigned_user.email
+        } if case.assigned_user else None,
+        "department": {
+            "id": case.department.id,
+            "name": case.department.name
+        } if case.department else None,
+        "priority_type": {
+            "id": case.priority_type.id,
+            "name": case.priority_type.name,
+            "color": case.priority_type.color
+        } if case.priority_type else None,
+        "support_type": {
+            "id": case.support_type.id,
+            "name": case.support_type.name
+        } if case.support_type else None,
+        "status": {
+            "id": case.status.id,
+            "name": case.status.name,
+            "color": case.status.color
+        } if case.status else None,
+        "assignments": [
+            {
+                "id": a.id,
+                "user_id": a.user_id,
+                "user": {
+                    "id": a.user.id,
+                    "full_name": a.user.full_name,
+                    "email": a.user.email
+                } if a.user else None
+            } for a in (case.assignments or [])
+        ],
+        "comments": [
+            {
+                "id": c.id,
+                "comment": c.comment,
+                "is_internal": c.is_internal,
+                "user": {
+                    "id": c.user.id,
+                    "full_name": c.user.full_name
+                } if c.user else None
+            } for c in (case.comments or [])
+        ],
+        "files": [
+            {
+                "id": f.id,
+                "filename": f.original_filename,
+                "file_path": f.file_path
+            } for f in (case.files or [])
+        ]
+    }
+    return case_dict
 
 
 @router.post("/", response_model=CaseResponse, status_code=status.HTTP_201_CREATED)
@@ -106,11 +327,33 @@ async def create_case(
 ):
     """Create new case"""
     try:
-        # Generate unique ticket number
-        ticket_number = generate_ticket_number()
-        # Ensure uniqueness
-        while db.query(Case).filter(Case.ticket_number == ticket_number).first():
-            ticket_number = generate_ticket_number()
+        # Validate required fields
+        if not case_data.description or not case_data.description.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Açıklama alanı boş olamaz"
+            )
+        
+        if not case_data.customer_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Müşteri seçilmelidir"
+            )
+        
+        # Generate unique ticket number (sequential by year)
+        ticket_number = generate_ticket_number(db)
+        # Ensure uniqueness (should not happen with sequential numbering, but safety check)
+        max_retries = 10
+        retry_count = 0
+        while db.query(Case).filter(Case.ticket_number == ticket_number).first() and retry_count < max_retries:
+            ticket_number = generate_ticket_number(db)
+            retry_count += 1
+        
+        if retry_count >= max_retries:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Ticket numarası oluşturulamadı. Lütfen tekrar deneyin."
+            )
         
         # Set request_date if not provided
         request_date = case_data.request_date or datetime.now()
@@ -121,10 +364,18 @@ async def create_case(
             delta = case_data.end_date - case_data.start_date
             time_spent_minutes = int(delta.total_seconds() / 60)
         
+        # Prepare case data, excluding fields that need special handling
+        case_dict = case_data.dict(exclude={"assigned_user_ids", "request_date", "time_spent_minutes"})
+        
+        # Convert empty strings to None for optional fields
+        for key, value in case_dict.items():
+            if isinstance(value, str) and value.strip() == "":
+                case_dict[key] = None
+        
         case = Case(
             ticket_number=ticket_number,
             request_date=request_date,
-            **case_data.dict(exclude={"assigned_user_ids", "request_date", "time_spent_minutes"}),
+            **case_dict,
             time_spent_minutes=time_spent_minutes,
             created_by=current_user.id
         )
@@ -154,12 +405,122 @@ async def create_case(
             joinedload(Case.files)
         ).filter(Case.id == case.id).first()
         
+        # Convert to dict format to avoid DetachedInstanceError and ResponseValidationError
+        case_dict = {
+            "id": case.id,
+            "ticket_number": case.ticket_number,
+            "title": case.title,
+            "description": case.description,
+            "request_date": case.request_date,
+            "customer_id": case.customer_id,
+            "customer_contact_id": case.customer_contact_id,
+            "product_id": case.product_id,
+            "created_by": case.created_by,
+            "assigned_to": case.assigned_to,
+            "department_id": case.department_id,
+            "priority_type_id": case.priority_type_id,
+            "support_type_id": case.support_type_id,
+            "status_id": case.status_id,
+            "solution": case.solution,
+            "start_date": case.start_date,
+            "end_date": case.end_date,
+            "time_spent_minutes": case.time_spent_minutes,
+            "custom_data": case.custom_data,
+            "created_at": case.created_at,
+            "updated_at": case.updated_at,
+            "customer": {
+                "id": case.customer.id,
+                "company_name": case.customer.company_name,
+                "email": case.customer.email,
+                "phone": getattr(case.customer, 'phone', None),
+                "address": getattr(case.customer, 'address', None)
+            } if case.customer else None,
+            "product": {
+                "id": case.product.id,
+                "name": case.product.name,
+                "code": case.product.code
+            } if case.product else None,
+            "creator": {
+                "id": case.creator.id,
+                "full_name": case.creator.full_name,
+                "email": case.creator.email
+            } if case.creator else None,
+            "assigned_user": {
+                "id": case.assigned_user.id,
+                "full_name": case.assigned_user.full_name,
+                "email": case.assigned_user.email
+            } if case.assigned_user else None,
+            "department": {
+                "id": case.department.id,
+                "name": case.department.name
+            } if case.department else None,
+            "priority_type": {
+                "id": case.priority_type.id,
+                "name": case.priority_type.name,
+                "color": case.priority_type.color
+            } if case.priority_type else None,
+            "support_type": {
+                "id": case.support_type.id,
+                "name": case.support_type.name
+            } if case.support_type else None,
+            "status": {
+                "id": case.status.id,
+                "name": case.status.name,
+                "color": case.status.color
+            } if case.status else None,
+            "assignments": [
+                {
+                    "id": a.id,
+                    "user_id": a.user_id,
+                    "user": {
+                        "id": a.user.id,
+                        "full_name": a.user.full_name,
+                        "email": a.user.email
+                    } if a.user else None
+                } for a in (case.assignments or [])
+            ],
+            "comments": [
+                {
+                    "id": c.id,
+                    "comment": c.comment,
+                    "is_internal": c.is_internal,
+                    "user": {
+                        "id": c.user.id,
+                        "full_name": c.user.full_name
+                    } if c.user else None
+                } for c in (case.comments or [])
+            ],
+            "files": [
+                {
+                    "id": f.id,
+                    "filename": f.original_filename,
+                    "file_path": f.file_path
+                } for f in (case.files or [])
+            ]
+        }
+        
         logger.info(f"Case created: {case.id} (Ticket: {ticket_number}) by user {current_user.id}")
-        return case
+        return case_dict
+    except HTTPException:
+        raise
+    except ValueError as e:
+        db.rollback()
+        logger.exception(f"Validation error creating case: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Geçersiz veri: {str(e)}"
+        )
     except Exception as e:
         db.rollback()
         logger.exception(f"Error creating case: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to create case: {str(e)}")
+        error_detail = str(e)
+        # Don't expose internal database errors to client
+        if "psycopg2" in error_detail or "sqlalchemy" in error_detail.lower():
+            error_detail = "Veritabanı hatası oluştu. Lütfen tekrar deneyin."
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Destek talebi oluşturulamadı: {error_detail}"
+        )
 
 
 @router.put("/{case_id}", response_model=CaseResponse)

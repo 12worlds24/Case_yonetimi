@@ -1600,7 +1600,7 @@ async function loadCases() {
             <tr>
                 <td>${caseItem.id}</td>
                 <td><strong>${caseItem.title}</strong></td>
-                <td>${caseItem.customer?.name || 'N/A'}</td>
+                <td>${caseItem.customer?.company_name || 'N/A'}</td>
                 <td><span class="badge badge-${getPriorityColor(caseItem.priority)}">${getPriorityText(caseItem.priority)}</span></td>
                 <td><span class="badge badge-secondary">${getStatusText(caseItem.status)}</span></td>
                 <td>
@@ -3223,9 +3223,15 @@ async function showAddCaseModal() {
         headers: { 'Authorization': `Bearer ${authToken}` }
     }).then(r => r.ok ? r.json() : null).catch(() => null);
 
-    // Set default request date (now)
+    // Set default request date (now) - format for datetime-local input
     const now = new Date();
-    const requestDateStr = now.toISOString().slice(0, 16);
+    // Convert to local timezone for datetime-local input
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const requestDateStr = `${year}-${month}-${day}T${hours}:${minutes}`;
 
     const modalHTML = `
         <div class="modal fade" id="addCaseModal" tabindex="-1">
@@ -3655,10 +3661,41 @@ async function saveCase() {
             return;
         }
 
+        // Validate description
+        const description = document.getElementById('caseDescription').value.trim();
+        if (!description) {
+            notifyWarning('Lütfen açıklama girin');
+            return;
+        }
+
+        // Helper function to convert date string to ISO format or null
+        const formatDate = (dateString) => {
+            if (!dateString || dateString.trim() === '') return null;
+            try {
+                // If already in ISO format, return as is
+                if (dateString.includes('T')) {
+                    return new Date(dateString).toISOString();
+                }
+                // Try to parse and convert to ISO
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return null;
+                return date.toISOString();
+            } catch (e) {
+                return null;
+            }
+        };
+
+        // Helper function to convert empty strings to null
+        const nullIfEmpty = (value) => {
+            if (value === null || value === undefined) return null;
+            if (typeof value === 'string' && value.trim() === '') return null;
+            return value;
+        };
+
         const caseData = {
-            title: document.getElementById('caseTitle').value || 'Destek Talebi',
-            description: document.getElementById('caseDescription').value,
-            request_date: document.getElementById('caseRequestDate').value,
+            title: document.getElementById('caseTitle').value.trim() || 'Destek Talebi',
+            description: description,
+            request_date: formatDate(document.getElementById('caseRequestDate').value),
             customer_id: parseInt(customerId),
             product_id: document.getElementById('caseProduct').value ? parseInt(document.getElementById('caseProduct').value) : null,
             assigned_to: document.getElementById('caseAssignedTo').value ? parseInt(document.getElementById('caseAssignedTo').value) : null,
@@ -3666,9 +3703,9 @@ async function saveCase() {
             priority_type_id: parseInt(priorityId),
             support_type_id: parseInt(supportTypeId),
             status_id: parseInt(statusId),
-            solution: document.getElementById('caseSolution').value || null,
-            start_date: document.getElementById('caseStartDate').value || null,
-            end_date: document.getElementById('caseEndDate').value || null,
+            solution: nullIfEmpty(document.getElementById('caseSolution').value),
+            start_date: formatDate(document.getElementById('caseStartDate').value),
+            end_date: formatDate(document.getElementById('caseEndDate').value),
             time_spent_minutes: document.getElementById('caseTimeSpent').value ? parseInt(document.getElementById('caseTimeSpent').value) : null,
             assigned_user_ids: Array.from(selectedStaffIds).map(id => parseInt(id))
         };

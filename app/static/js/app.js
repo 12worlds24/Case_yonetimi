@@ -128,7 +128,7 @@ async function loadDashboard() {
                 <tr>
                     <td>${caseItem.id}</td>
                     <td><strong>${caseItem.title}</strong></td>
-                    <td>${caseItem.customer?.name || 'N/A'}</td>
+                    <td>${caseItem.customer?.company_name || 'N/A'}</td>
                     <td><span class="badge badge-${getPriorityColor(caseItem.priority)}">${getPriorityText(caseItem.priority)}</span></td>
                     <td><span class="badge badge-secondary">${getStatusText(caseItem.status)}</span></td>
                     <td>${new Date(caseItem.created_at).toLocaleDateString('tr-TR')}</td>
